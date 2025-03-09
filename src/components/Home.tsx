@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlayCircle, Trophy, Medal } from 'lucide-react';
+import { PlayCircle, Trophy, Medal, Club } from 'lucide-react';
 import { supabase } from '../supabase';
 
 interface TopPlayer {
@@ -33,13 +33,13 @@ export default function Home() {
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="bg-white rounded-lg shadow-xl p-8 text-center">
         <div className="flex justify-center mb-6">
-          <Trophy className="h-16 w-16 text-[#0342AF]" />
+          <Club className="h-16 w-16 text-[#0342AF]" />
         </div>
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Bienvenue sur Axxone Coinche
         </h1>
         <p className="text-xl text-gray-600 mb-8">
-          Gardons une trace de nos parties et prouvons que Sir Marc n'est pas le meilleur
+          Gardons une trace de nos parties et prouvons que Sir Marc n'est pas le meilleur !
         </p>
         <button
           onClick={() => navigate('/game')}

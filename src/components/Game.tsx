@@ -234,47 +234,61 @@ export default function Game() {
     }
   };
 
-  const calculateRoundScore = (round: Round): { bluePoints: number, redPoints: number } => {
+  const calculateRoundScore = (round) => {
     let blueScore = 0;
     let redScore = 0;
     
     const contractValue = round.contract === 'capot' ? 250 : parseInt(round.contract);
+    const lastTrickPoints = 10; // Points du dernier pli
+    const totalPoints = round.bluePoints + round.redPoints;
+  
+    // Vérifier si l'équipe preneuse a atteint au moins 82 points (y compris dernier pli)
+    const isContractFulfilled = round.team === 'blue' 
+      ? (round.bluePoints + lastTrickPoints >= 82 && round.bluePoints + lastTrickPoints > round.redPoints) 
+      : (round.redPoints + lastTrickPoints >= 82 && round.redPoints + lastTrickPoints > round.bluePoints);
     
-    if (round.contractFulfilled) {
+    if (isContractFulfilled) {
       if (round.team === 'blue') {
-        blueScore += contractValue;
+        blueScore = round.bluePoints + lastTrickPoints + contractValue;
+        redScore = round.redPoints;
       } else {
-        redScore += contractValue;
+        redScore = round.redPoints + lastTrickPoints + contractValue;
+        blueScore = round.bluePoints;
       }
     } else {
+      // L'équipe adverse prend tous les points + la valeur du contrat
       if (round.team === 'blue') {
-        redScore += contractValue;
+        redScore = 162 + contractValue;
       } else {
-        blueScore += contractValue;
+        blueScore = 162 + contractValue;
       }
     }
-
+  
+    // Ajouter la belote-rebelote si applicable
     if (round.blueTeam.beloteRebelote) {
       blueScore += 20;
     }
-
     if (round.redTeam.beloteRebelote) {
       redScore += 20;
     }
-
-    // Calculate points for each announcement, considering multiple instances
-    round.blueTeam.announcements.forEach(announcement => {
-      const points = announcements.find(a => a.title === announcement)?.points || 0;
-      blueScore += points;
-    });
-
-    round.redTeam.announcements.forEach(announcement => {
-      const points = announcements.find(a => a.title === announcement)?.points || 0;
-      redScore += points;
-    });
-
+  
+    // Comparer les annonces et ne garder que la plus forte (seulement si l'équipe gagne le tour)
+    const getAnnouncementPoints = (announcements) => 
+      announcements.map(a => ({ title: a, points: announcements.find(x => x.title === a)?.points || 0 }))
+      .sort((a, b) => b.points - a.points)[0]?.points || 0;
+    
+    const blueAnnouncePoints = getAnnouncementPoints(round.blueTeam.announcements);
+    const redAnnouncePoints = getAnnouncementPoints(round.redTeam.announcements);
+    
+    if (blueScore > redScore) {
+      blueScore += blueAnnouncePoints;
+    } else if (redScore > blueScore) {
+      redScore += redAnnouncePoints;
+    }
+  
     return { bluePoints: blueScore, redPoints: redScore };
   };
+  
 
   const handleBidSubmit = () => {
     setCurrentRound(prev => ({
@@ -753,7 +767,7 @@ export default function Game() {
           leaveTo="opacity-0 scale-95"
         >
           <div className="bg-white rounded-lg shadow-xl p-6">
-            <h2 className="text-xl font-semibold mb-4">Fin de la Partie</h2>
+            <h2 className="text-xl font-semibold mb-4">Bientôt 14h ?</h2>
             <p className="text-gray-600 mb-4">Voulez-vous vraiment terminer la partie ?</p>
             <div className="flex justify-end space-x-4">
               <button
