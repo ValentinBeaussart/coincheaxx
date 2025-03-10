@@ -46,7 +46,7 @@ export default function Home() {
           className="inline-flex items-center px-6 py-3 bg-[#0342AF] text-white text-lg font-medium rounded-md hover:bg-[#0342AF]/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0342AF]"
         >
           <PlayCircle className="h-6 w-6 mr-2" />
-          Commencer une partie
+          Commencer une partie !
         </button>
       </div>
 
