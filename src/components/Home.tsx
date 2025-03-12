@@ -49,7 +49,6 @@ export default function Home() {
           Commencer une partie !
         </button>
       </div>
-
       {topPlayers.length > 0 && (
         <div className="bg-white rounded-lg shadow-xl p-8">
           <h2 className="text-2xl font-bold text-center mb-8">Les GOATS</h2>
