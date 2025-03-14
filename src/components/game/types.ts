@@ -22,6 +22,7 @@ export interface GameState {
 export interface TeamAnnouncements {
   beloteRebelote: boolean;
   announcements: string[];
+  lastTrick: boolean;
 }
 
 export interface Round {
@@ -35,6 +36,8 @@ export interface Round {
   suit: Suit;
   bluePoints: number;
   redPoints: number;
+  isCoinched: boolean;
+  isSurCoinched: boolean;
 }
 
 export interface BiddingState {
@@ -43,6 +46,8 @@ export interface BiddingState {
     team: Team;
     contract: Contract;
     suit: Suit;
+    isCoinched: boolean;
+    isSurCoinched: boolean;
   };
 }
 

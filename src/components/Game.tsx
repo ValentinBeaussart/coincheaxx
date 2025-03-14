@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Trophy, Flag, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Trophy, Flag, ChevronDown } from 'lucide-react';
 import { Dialog, Transition, Disclosure } from '@headlessui/react';
 import { supabase } from '../supabase';
 import { useNavigate } from 'react-router-dom';
@@ -84,6 +84,8 @@ export default function Game() {
       team: 'blue',
       contract: '80',
       suit: '♥',
+      isCoinched: false,
+      isSurCoinched: false,
     },
   });
 
@@ -98,15 +100,19 @@ export default function Game() {
     blueTeam: {
       beloteRebelote: false,
       announcements: [],
+      lastTrick: false,
     },
     redTeam: {
       beloteRebelote: false,
       announcements: [],
+      lastTrick: false,
     },
     contractFulfilled: false,
     suit: '♥',
     bluePoints: 0,
     redPoints: 0,
+    isCoinched: false,
+    isSurCoinched: false,
   });
 
   const [blueScore, setBlueScore] = useState(0);
@@ -234,37 +240,51 @@ export default function Game() {
     }
   };
 
+  const roundScore = (score) => {
+    const remainder = score % 10;
+    if (remainder >= 6) return score + (10 - remainder);
+    return score - remainder;
+  };
+  
+  const getAnnouncementPoints = (announcements) => 
+    announcements.reduce((total, a) => total + (announcements.find(x => x.title === a)?.points || 0), 0);
+  
   const calculateRoundScore = (round) => {
     let blueScore = 0;
     let redScore = 0;
     
-    const contractValue = round.contract === 'capot' ? 250 : parseInt(round.contract);
-    const lastTrickPoints = 10; // Points du dernier pli
-    const totalPoints = round.bluePoints + round.redPoints;
-  
-    // Vérifier si l'équipe preneuse a atteint au moins 82 points (y compris dernier pli)
-    const isContractFulfilled = round.team === 'blue' 
-      ? (round.bluePoints + lastTrickPoints >= 82 && round.bluePoints + lastTrickPoints > round.redPoints) 
-      : (round.redPoints + lastTrickPoints >= 82 && round.redPoints + lastTrickPoints > round.bluePoints);
+    let contractValue = round.contract === 'capot' ? 250 : parseInt(round.contract);
     
-    if (isContractFulfilled) {
+    // Gestion du Coinche et Surcoinche
+    const multiplier = round.isSurCoinched ? 4 : round.isCoinched ? 2 : 1;
+    contractValue *= multiplier;
+  
+    const lastTrickPoints = 10;
+    const totalBluePoints = round.bluePoints + (round.blueTeam.lastTrick ? lastTrickPoints : 0);
+    const totalRedPoints = round.redPoints + (round.redTeam.lastTrick ? lastTrickPoints : 0);
+    
+    const contractMet = round.team === 'blue' 
+      ? totalBluePoints >= parseInt(round.contract)
+      : totalRedPoints >= parseInt(round.contract);
+  
+    if (contractMet) {
       if (round.team === 'blue') {
-        blueScore = round.bluePoints + lastTrickPoints + contractValue;
-        redScore = round.redPoints;
+        blueScore = totalBluePoints + contractValue + getAnnouncementPoints(round.blueTeam.announcements);
+        redScore = totalRedPoints;
       } else {
-        redScore = round.redPoints + lastTrickPoints + contractValue;
-        blueScore = round.bluePoints;
+        redScore = totalRedPoints + contractValue + getAnnouncementPoints(round.redTeam.announcements);
+        blueScore = totalBluePoints;
       }
     } else {
-      // L'équipe adverse prend tous les points + la valeur du contrat
       if (round.team === 'blue') {
-        redScore = 162 + contractValue;
+        blueScore = round.blueTeam.beloteRebelote ? 20 : 0;
+        redScore = 162 + contractValue + getAnnouncementPoints(round.blueTeam.announcements);
       } else {
-        blueScore = 162 + contractValue;
+        redScore = round.redTeam.beloteRebelote ? 20 : 0;
+        blueScore = 162 + contractValue + getAnnouncementPoints(round.redTeam.announcements);
       }
     }
   
-    // Ajouter la belote-rebelote si applicable
     if (round.blueTeam.beloteRebelote) {
       blueScore += 20;
     }
@@ -272,22 +292,11 @@ export default function Game() {
       redScore += 20;
     }
   
-    // Comparer les annonces et ne garder que la plus forte (seulement si l'équipe gagne le tour)
-    const getAnnouncementPoints = (announcements) => 
-      announcements.map(a => ({ title: a, points: announcements.find(x => x.title === a)?.points || 0 }))
-      .sort((a, b) => b.points - a.points)[0]?.points || 0;
-    
-    const blueAnnouncePoints = getAnnouncementPoints(round.blueTeam.announcements);
-    const redAnnouncePoints = getAnnouncementPoints(round.redTeam.announcements);
-    
-    if (blueScore > redScore) {
-      blueScore += blueAnnouncePoints;
-    } else if (redScore > blueScore) {
-      redScore += redAnnouncePoints;
-    }
-  
-    return { bluePoints: blueScore, redPoints: redScore };
+    return { bluePoints: roundScore(blueScore), redPoints: roundScore(redScore) };
   };
+  
+  
+  
   
 
   const handleBidSubmit = () => {
@@ -296,6 +305,8 @@ export default function Game() {
       team: biddingState.currentBid.team,
       contract: biddingState.currentBid.contract,
       suit: biddingState.currentBid.suit,
+      isCoinched: biddingState.currentBid.isCoinched,
+      isSurCoinched: biddingState.currentBid.isSurCoinched,
       contractType: 'normale',
     }));
     setBiddingState(prev => ({ ...prev, isBiddingPhase: false }));
@@ -303,24 +314,18 @@ export default function Game() {
 
   const handlePointsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const totalPoints = currentRound.bluePoints + currentRound.redPoints;
-    const contractValue = currentRound.contract === 'capot' ? 250 : parseInt(currentRound.contract);
-    const isContractFulfilled = currentRound.team === 'blue' ? 
-      currentRound.bluePoints >= contractValue : 
-      currentRound.redPoints >= contractValue;
-
-    const roundScore = calculateRoundScore({
-      ...currentRound,
-      contractFulfilled: isContractFulfilled,
-    });
+    
+    const roundScore = calculateRoundScore(currentRound);
     
     setBlueScore(prev => prev + roundScore.bluePoints);
     setRedScore(prev => prev + roundScore.redPoints);
 
     setRounds(prev => [...prev, { 
-      ...currentRound, 
+      ...currentRound,
       points: roundScore.bluePoints + roundScore.redPoints,
-      contractFulfilled: isContractFulfilled,
+      contractFulfilled: currentRound.team === 'blue' ? 
+        currentRound.bluePoints >= (currentRound.contract === 'capot' ? 250 : parseInt(currentRound.contract)) :
+        currentRound.redPoints >= (currentRound.contract === 'capot' ? 250 : parseInt(currentRound.contract)),
     }]);
     
     setBiddingState({
@@ -329,6 +334,8 @@ export default function Game() {
         team: 'blue',
         contract: '80',
         suit: '♥',
+        isCoinched: false,
+        isSurCoinched: false,
       },
     });
     setCurrentRound({
@@ -339,15 +346,19 @@ export default function Game() {
       blueTeam: {
         beloteRebelote: false,
         announcements: [],
+        lastTrick: false,
       },
       redTeam: {
         beloteRebelote: false,
         announcements: [],
+        lastTrick: false,
       },
       contractFulfilled: false,
       suit: '♥',
       bluePoints: 0,
       redPoints: 0,
+      isCoinched: false,
+      isSurCoinched: false,
     });
   };
 
@@ -543,6 +554,47 @@ export default function Game() {
               </div>
             </div>
 
+            <div className="flex gap-4 mt-4">
+              <button
+                type="button"
+                onClick={() => setBiddingState(prev => ({
+                  ...prev,
+                  currentBid: { 
+                    ...prev.currentBid, 
+                    isCoinched: !prev.currentBid.isCoinched,
+                    isSurCoinched: false
+                  }
+                }))}
+                className={`flex-1 py-3 px-4 rounded-lg text-base font-medium ${
+                  biddingState.currentBid.isCoinched
+                    ? 'bg-yellow-500 text-white'
+                    : 'bg-yellow-100 text-yellow-700'
+                }`}
+              >
+                Coinché
+              </button>
+              <button
+                type="button"
+                disabled={!biddingState.currentBid.isCoinched}
+                onClick={() => setBiddingState(prev => ({
+                  ...prev,
+                  currentBid: { 
+                    ...prev.currentBid, 
+                    isSurCoinched: !prev.currentBid.isSurCoinched 
+                  }
+                }))}
+                className={`flex-1 py-3 px-4 rounded-lg text-base font-medium ${
+                  biddingState.currentBid.isSurCoinched
+                    ? 'bg-orange-500 text-white'
+                    : biddingState.currentBid.isCoinched
+                    ? 'bg-orange-100 text-orange-700'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                Surcoinché
+              </button>
+            </div>
+
             <button
               onClick={handleBidSubmit}
               className="w-full bg-[#0342AF] text-white py-4 px-4 rounded-lg hover:bg-[#0342AF]/90 focus:outline-none focus:ring-2 focus:ring-[#0342AF] focus:ring-offset-2 text-lg font-medium mt-8"
@@ -584,6 +636,39 @@ export default function Game() {
                   className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0342AF] focus:ring-[#0342AF] text-base py-3"
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="button"
+                onClick={() => setCurrentRound(prev => ({
+                  ...prev,
+                  blueTeam: { ...prev.blueTeam, lastTrick: true },
+                  redTeam: { ...prev.redTeam, lastTrick: false }
+                }))}
+                className={`py-3 px-4 rounded-lg text-base font-medium ${
+                  currentRound.blueTeam.lastTrick
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-blue-100 text-blue-700'
+                }`}
+              >
+                Dernier pli Blue
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrentRound(prev => ({
+                  ...prev,
+                  blueTeam: { ...prev.blueTeam, lastTrick: false },
+                  redTeam: { ...prev.redTeam, lastTrick: true }
+                }))}
+                className={`py-3 px-4 rounded-lg text-base font-medium ${
+                  currentRound.redTeam.lastTrick
+                    ? 'bg-red-500 text-white'
+                    : 'bg-red-100 text-red-700'
+                }`}
+              >
+                Dernier pli Red
+              </button>
             </div>
 
             <div className="space-y-4">
@@ -706,6 +791,8 @@ export default function Game() {
                           <div>
                             <span className="font-semibold">
                               {round.team === 'blue' ? 'Blue Team' : 'Red Team'} - {round.contract} {round.suit}
+                              {round.isCoinched && ' (Coinché)'}
+                              {round.isSurCoinched && ' (Surcoinché)'}
                             </span>
                           </div>
                           <span className={`font-bold ${round.contractFulfilled ? 'text-green-600' : 'text-red-600'}`}>
@@ -714,6 +801,11 @@ export default function Game() {
                         </div>
                         <div className="mt-2 text-sm text-gray-600">
                           Points: Blue {round.bluePoints} - Red {round.redPoints}
+                          {(round.blueTeam.lastTrick || round.redTeam.lastTrick) && (
+                            <span className="ml-2">
+                              (Dernier pli: {round.blueTeam.lastTrick ? 'Blue' : 'Red'})
+                            </span>
+                          )}
                         </div>
                         {(round.blueTeam.announcements.length > 0 || round.blueTeam.beloteRebelote) && (
                           <div className="mt-1 text-sm text-blue-600">
@@ -741,54 +833,66 @@ export default function Game() {
         </div>
       </div>
 
-     <Transition appear show={isEndGameModalOpen} as={Fragment}>
-  <Dialog as="div" className="relative z-10" onClose={() => setIsEndGameModalOpen(false)}>
-    <Transition.Child
-      as={Fragment}
-      enter="ease-out duration-300"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="ease-in duration-200"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-    >
-      <div className="fixed inset-0 bg-black bg-opacity-25" />
-    </Transition.Child>
+      <Transition appear show={isEndGameModalOpen} as={Fragment}>
+        <Dialog as="div" className="relative z-10" onClose={() => setIsEndGameModalOpen(false)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black bg-opacity-25" />
+          </Transition.Child>
 
-    <div className="fixed inset-0 overflow-y-auto">
-      <div className="flex min-h-full items-center justify-center p-4">
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0 scale-95"
-          enterTo="opacity-100 scale-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100 scale-100"
-          leaveTo="opacity-0 scale-95"
-        >
-          <div className="bg-white rounded-lg shadow-xl p-6">
-            <h2 className="text-xl font-semibold mb-4">Bientôt 14h ?</h2>
-            <p className="text-gray-600 mb-4">Voulez-vous vraiment terminer la partie ?</p>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setIsEndGameModalOpen(false)}
-                className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
               >
-                Annuler
-              </button>
-              <button
-                onClick={handleEndGame}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Terminer
-              </button>
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-lg font-medium leading-6 text-gray-900"
+                  >
+                    Bientôt 14h ?
+                  </Dialog.Title>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Êtes-vous sûr de vouloir terminer la partie ?
+                    </p>
+                  </div>
+
+                  <div className="mt-4 flex justify-end space-x-3">
+                    <button
+                      type="button"
+                      className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                      onClick={() => setIsEndGameModalOpen(false)}
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                      onClick={handleEndGame}
+                    >
+                      Terminer
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
             </div>
           </div>
-        </Transition.Child>
-      </div>
-    </div>
-  </Dialog>
-</Transition>
+        </Dialog>
+      </Transition>
     </div>
   );
 }
