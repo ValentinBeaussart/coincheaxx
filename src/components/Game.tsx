@@ -250,7 +250,7 @@ export default function Game() {
   const getAnnouncementPoints = (announcements) => 
     announcements.reduce((total, a) => total + (announcements.find(x => x.title === a)?.points || 0), 0);
   
-const calculateRoundScore = (round) => {
+const calculateRoundScore = (round: Round) => {
   let blueScore = 0;
   let redScore = 0;
 
@@ -259,12 +259,27 @@ const calculateRoundScore = (round) => {
   contractValue *= multiplier;
 
   const lastTrickPoints = 10;
-  const totalBluePoints = round.bluePoints + (round.blueTeam.lastTrick ? lastTrickPoints : 0) + (round.blueTeam.beloteRebelote ? 20 : 0) + getAnnouncementPoints(round.blueTeam.announcements);
-  const totalRedPoints = round.redPoints + (round.redTeam.lastTrick ? lastTrickPoints : 0) + (round.redTeam.beloteRebelote ? 20 : 0) + getAnnouncementPoints(round.redTeam.announcements);
+  
+  // Calcul des points de chaque équipe
+  const totalBluePoints = 
+    round.bluePoints + 
+    (round.blueTeam.lastTrick ? lastTrickPoints : 0) + 
+    (round.blueTeam.beloteRebelote ? 20 : 0) + 
+    getAnnouncementPoints(round.blueTeam.announcements);
+  
+  const totalRedPoints = 
+    round.redPoints + 
+    (round.redTeam.lastTrick ? lastTrickPoints : 0) + 
+    (round.redTeam.beloteRebelote ? 20 : 0) + 
+    getAnnouncementPoints(round.redTeam.announcements);
 
-  const contractMet = totalBluePoints >= contractValue;
+  // Vérifier si le contrat est rempli
+  const contractMet = round.team === 'blue' 
+    ? totalBluePoints >= contractValue 
+    : totalRedPoints >= contractValue;
 
   if (contractMet) {
+    // L'équipe qui a pris a réussi son contrat
     if (round.team === 'blue') {
       blueScore = contractValue + totalBluePoints;
       redScore = totalRedPoints;
@@ -273,18 +288,18 @@ const calculateRoundScore = (round) => {
       blueScore = totalBluePoints;
     }
   } else {
+    // L'équipe qui a pris chute
     if (round.team === 'blue') {
       blueScore = 0;
-      redScore = contractValue + 160 + totalRedPoints;
+      redScore = contractValue + 160 + getAnnouncementPoints(round.blueTeam.announcements);
     } else {
       redScore = 0;
-      blueScore = contractValue + 160 + totalBluePoints;
+      blueScore = contractValue + 160 + getAnnouncementPoints(round.redTeam.announcements);
     }
   }
 
   return { bluePoints: roundScore(blueScore), redPoints: roundScore(redScore) };
 };
-
   
   
   
