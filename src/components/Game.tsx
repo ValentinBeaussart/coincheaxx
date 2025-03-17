@@ -258,11 +258,11 @@ const calculateRoundScore = (round) => {
   contractValue *= multiplier;
 
   const lastTrickPoints = 10;
-  const totalBluePoints = round.bluePoints + (round.blueTeam.lastTrick ? lastTrickPoints : 0);
-  const totalRedPoints = round.redPoints + (round.redTeam.lastTrick ? lastTrickPoints : 0);
+  const totalBluePoints = round.bluePoints + (round.blueTeam.lastTrick ? lastTrickPoints : 0) + (round.blueTeam.beloteRebelote ? 20 : 0);
+  const totalRedPoints = round.redPoints + (round.redTeam.lastTrick ? lastTrickPoints : 0) + (round.redTeam.beloteRebelote ? 20 : 0);
 
-  let blueAnnouncementsPoints = getAnnouncementPoints(round.blueTeam.announcements) + (round.blueTeam.beloteRebelote ? 20 : 0);
-  let redAnnouncementsPoints = getAnnouncementPoints(round.redTeam.announcements) + (round.redTeam.beloteRebelote ? 20 : 0);
+  let blueAnnouncementsPoints = getAnnouncementPoints(round.blueTeam.announcements);
+  let redAnnouncementsPoints = getAnnouncementPoints(round.redTeam.announcements);
 
   const contractPoints = round.team === 'blue' 
     ? totalBluePoints + blueAnnouncementsPoints 
@@ -273,10 +273,10 @@ const calculateRoundScore = (round) => {
   if (contractMet) {
     if (round.team === 'blue') {
       blueScore = contractValue + contractPoints;
-      redScore = 162 - totalBluePoints + redAnnouncementsPoints;
+      redScore = totalRedPoints + redAnnouncementsPoints;
     } else {
       redScore = contractValue + contractPoints;
-      blueScore = 162 - totalRedPoints + blueAnnouncementsPoints;
+      blueScore = totalBluePoints + blueAnnouncementsPoints;
     }
   } else {
     if (round.team === 'blue') {
