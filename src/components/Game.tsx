@@ -8,11 +8,12 @@ import { announcements, contractValues, suits } from './game/constants';
 import type { Team, Suit, Contract, Player, GameState, Round, BiddingState } from './game/types';
 import GameSetup from './game/GameSetup';
 
-const AnnouncementCard = ({ title, points, isSelected, onClick, disabled, count }: { 
+const AnnouncementCard = ({ title, points, isSelected, onIncrement, onDecrement, disabled, count }: { 
   title: string; 
   points: number;
   isSelected: boolean;
-  onClick: () => void;
+  onIncrement: () => void;
+  onDecrement: () => void;
   disabled: boolean;
   count?: number;
 }) => {
@@ -23,7 +24,7 @@ const AnnouncementCard = ({ title, points, isSelected, onClick, disabled, count 
     <div className="relative">
       <button
         type="button"
-        onClick={onClick}
+        onClick={onIncrement}
         disabled={disabled}
         className={`${
           isSelected 
@@ -43,7 +44,7 @@ const AnnouncementCard = ({ title, points, isSelected, onClick, disabled, count 
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onClick(); // This will decrease the count
+              onDecrement(); // Réduit le nombre d'annonces
             }}
             className="w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 rounded-full hover:bg-red-200"
           >
@@ -53,7 +54,7 @@ const AnnouncementCard = ({ title, points, isSelected, onClick, disabled, count 
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onClick(); // This will increase the count
+              onIncrement(); // Augmente le nombre d'annonces
             }}
             className="w-8 h-8 flex items-center justify-center bg-[#0342AF]/10 text-[#0342AF] rounded-full hover:bg-[#0342AF]/20"
           >
@@ -687,7 +688,8 @@ const calculateRoundScore = (round) => {
                                   ? currentRound.blueTeam.beloteRebelote
                                   : count > 0
                               }
-                              onClick={() => toggleAnnouncement('blueTeam', announcement.title)}
+                              onIncrement={() => toggleAnnouncement('blueTeam', announcement.title)}
+                              onDecrement={() => removeAnnouncement('blueTeam', announcement.title)}
                               disabled={
                                 announcement.title === 'Belote-Rebelote'
                                   ? currentRound.redTeam.beloteRebelote
@@ -729,7 +731,8 @@ const calculateRoundScore = (round) => {
                                   ? currentRound.redTeam.beloteRebelote
                                   : count > 0
                               }
-                              onClick={() => toggleAnnouncement('redTeam', announcement.title)}
+                              onIncrement={() => toggleAnnouncement('redTeam', announcement.title)}
+                              onDecrement={() => removeAnnouncement('redTeam', announcement.title)}
                               disabled={
                                 announcement.title === 'Belote-Rebelote'
                                   ? currentRound.blueTeam.beloteRebelote
