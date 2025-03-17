@@ -252,10 +252,8 @@ export default function Game() {
 const calculateRoundScore = (round) => {
   let blueScore = 0;
   let redScore = 0;
-  
+
   let contractValue = round.contract === 'capot' ? 250 : parseInt(round.contract);
-  
-  // Gestion du Coinche et Surcoinche
   const multiplier = round.isSurCoinched ? 4 : round.isCoinched ? 2 : 1;
   contractValue *= multiplier;
 
@@ -266,28 +264,27 @@ const calculateRoundScore = (round) => {
   let blueAnnouncementsPoints = getAnnouncementPoints(round.blueTeam.announcements) + (round.blueTeam.beloteRebelote ? 20 : 0);
   let redAnnouncementsPoints = getAnnouncementPoints(round.redTeam.announcements) + (round.redTeam.beloteRebelote ? 20 : 0);
 
-  // Vérification si l'équipe qui a pris l'enchère réalise son contrat avec les annonces et la belote-rebelote
   const contractPoints = round.team === 'blue' 
     ? totalBluePoints + blueAnnouncementsPoints 
     : totalRedPoints + redAnnouncementsPoints;
-  
+
   const contractMet = contractPoints >= contractValue;
 
   if (contractMet) {
     if (round.team === 'blue') {
-      blueScore = totalBluePoints + contractValue + blueAnnouncementsPoints;
-      redScore = totalRedPoints + redAnnouncementsPoints;
+      blueScore = contractValue + contractPoints;
+      redScore = 162 - totalBluePoints + redAnnouncementsPoints;
     } else {
-      redScore = totalRedPoints + contractValue + redAnnouncementsPoints;
-      blueScore = totalBluePoints + blueAnnouncementsPoints;
+      redScore = contractValue + contractPoints;
+      blueScore = 162 - totalRedPoints + blueAnnouncementsPoints;
     }
   } else {
     if (round.team === 'blue') {
       blueScore = 0;
-      redScore = 162 + contractValue + redAnnouncementsPoints;
+      redScore = contractValue + 160 + redAnnouncementsPoints;
     } else {
       redScore = 0;
-      blueScore = 162 + contractValue + blueAnnouncementsPoints;
+      blueScore = contractValue + 160 + blueAnnouncementsPoints;
     }
   }
 
