@@ -267,9 +267,11 @@ const calculateRoundScore = (round) => {
   let redAnnouncementsPoints = getAnnouncementPoints(round.redTeam.announcements) + (round.redTeam.beloteRebelote ? 20 : 0);
 
   // Vérification si l'équipe qui a pris l'enchère réalise son contrat avec les annonces et la belote-rebelote
-  const contractMet = round.team === 'blue' 
-    ? (totalBluePoints + blueAnnouncementsPoints) >= contractValue
-    : (totalRedPoints + redAnnouncementsPoints) >= contractValue;
+  const contractPoints = round.team === 'blue' 
+    ? totalBluePoints + blueAnnouncementsPoints 
+    : totalRedPoints + redAnnouncementsPoints;
+  
+  const contractMet = contractPoints >= contractValue;
 
   if (contractMet) {
     if (round.team === 'blue') {
@@ -282,14 +284,10 @@ const calculateRoundScore = (round) => {
   } else {
     if (round.team === 'blue') {
       blueScore = 0;
-      redScore = 162 + contractValue + blueAnnouncementsPoints;
-      redAnnouncementsPoints += blueAnnouncementsPoints; // L'équipe adverse prend les annonces
-      blueAnnouncementsPoints = 0;
+      redScore = 162 + contractValue + redAnnouncementsPoints;
     } else {
       redScore = 0;
-      blueScore = 162 + contractValue + redAnnouncementsPoints;
-      blueAnnouncementsPoints += redAnnouncementsPoints; // L'équipe adverse prend les annonces
-      redAnnouncementsPoints = 0;
+      blueScore = 162 + contractValue + blueAnnouncementsPoints;
     }
   }
 
