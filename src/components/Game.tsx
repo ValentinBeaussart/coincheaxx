@@ -258,33 +258,26 @@ const calculateRoundScore = (round) => {
   contractValue *= multiplier;
 
   const lastTrickPoints = 10;
-  const totalBluePoints = round.bluePoints + (round.blueTeam.lastTrick ? lastTrickPoints : 0) + (round.blueTeam.beloteRebelote ? 20 : 0);
-  const totalRedPoints = round.redPoints + (round.redTeam.lastTrick ? lastTrickPoints : 0) + (round.redTeam.beloteRebelote ? 20 : 0);
+  const totalBluePoints = round.bluePoints + (round.blueTeam.lastTrick ? lastTrickPoints : 0) + (round.blueTeam.beloteRebelote ? 20 : 0) + getAnnouncementPoints(round.blueTeam.announcements);
+  const totalRedPoints = round.redPoints + (round.redTeam.lastTrick ? lastTrickPoints : 0) + (round.redTeam.beloteRebelote ? 20 : 0) + getAnnouncementPoints(round.redTeam.announcements);
 
-  let blueAnnouncementsPoints = getAnnouncementPoints(round.blueTeam.announcements);
-  let redAnnouncementsPoints = getAnnouncementPoints(round.redTeam.announcements);
-
-  const contractPoints = round.team === 'blue' 
-    ? totalBluePoints + blueAnnouncementsPoints 
-    : totalRedPoints + redAnnouncementsPoints;
-
-  const contractMet = contractPoints >= contractValue;
+  const contractMet = totalBluePoints >= contractValue;
 
   if (contractMet) {
     if (round.team === 'blue') {
-      blueScore = contractValue + contractPoints;
-      redScore = totalRedPoints + redAnnouncementsPoints;
+      blueScore = contractValue + totalBluePoints;
+      redScore = totalRedPoints;
     } else {
-      redScore = contractValue + contractPoints;
-      blueScore = totalBluePoints + blueAnnouncementsPoints;
+      redScore = contractValue + totalRedPoints;
+      blueScore = totalBluePoints;
     }
   } else {
     if (round.team === 'blue') {
       blueScore = 0;
-      redScore = contractValue + 160 + redAnnouncementsPoints;
+      redScore = contractValue + 160 + totalRedPoints;
     } else {
       redScore = 0;
-      blueScore = contractValue + 160 + blueAnnouncementsPoints;
+      blueScore = contractValue + 160 + totalBluePoints;
     }
   }
 
