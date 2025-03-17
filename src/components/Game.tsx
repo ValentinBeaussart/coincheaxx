@@ -205,6 +205,8 @@ export default function Game() {
   const handleEndGame = async () => {
     try {
       const isBlueWinning = blueScore > redScore;
+  
+      // 🔹 Récupération des joueurs par équipe
       const bluePlayers = [
         gameState.players.nous1?.id,
         gameState.players.nous2?.id,
@@ -213,53 +215,50 @@ export default function Game() {
         gameState.players.eux1?.id,
         gameState.players.eux2?.id,
       ].filter(Boolean);
-
+  
       const allPlayers = [...bluePlayers, ...redPlayers];
-
+  
       if (allPlayers.length === 0) {
         console.error("Aucun joueur valide trouvé !");
         return;
       }
-
+  
+      // 🔹 Mise à jour ou insertion de la partie
       if (gameState.gameId) {
         const { error: gameError } = await supabase
           .from("games")
           .update({
             score_nous: blueScore,
             score_eux: redScore,
-            winning_team_player1_id: isBlueWinning
-              ? bluePlayers[0]
-              : redPlayers[0],
-            winning_team_player2_id: isBlueWinning
-              ? bluePlayers[1]
-              : redPlayers[1],
+            winning_team_player1_id: isBlueWinning ? bluePlayers[0] : redPlayers[0],
+            winning_team_player2_id: isBlueWinning ? bluePlayers[1] : redPlayers[1],
+            losing_team_player1_id: isBlueWinning ? redPlayers[0] : bluePlayers[0], // ✅ Ajout des perdants
+            losing_team_player2_id: isBlueWinning ? redPlayers[1] : bluePlayers[1], // ✅ Ajout des perdants
           })
           .eq("id", gameState.gameId);
-
+  
         if (gameError) {
           console.error("Erreur lors de la mise à jour du jeu :", gameError);
           return;
         }
       }
-
+  
+      // 🔹 Mise à jour des stats des joueurs
       const { data: profiles, error: fetchError } = await supabase
         .from("profiles")
         .select("id, games_played, games_won, games_lost")
         .in("id", allPlayers);
-
+  
       if (fetchError) {
-        console.error(
-          "Erreur lors de la récupération des joueurs :",
-          fetchError
-        );
+        console.error("Erreur lors de la récupération des joueurs :", fetchError);
         return;
       }
-
+  
       const updates = profiles.map((profile) => {
         const isWinner = isBlueWinning
           ? bluePlayers.includes(profile.id)
           : redPlayers.includes(profile.id);
-
+  
         return supabase
           .from("profiles")
           .update({
@@ -267,20 +266,18 @@ export default function Game() {
             games_won: profile.games_won + (isWinner ? 1 : 0),
             games_lost: profile.games_lost + (isWinner ? 0 : 1),
             win_percentage:
-              ((profile.games_won + (isWinner ? 1 : 0)) /
-                (profile.games_played + 1)) *
-              100,
+              ((profile.games_won + (isWinner ? 1 : 0)) / (profile.games_played + 1)) * 100,
           })
           .eq("id", profile.id);
       });
-
+  
       await Promise.all(updates);
-
+  
       navigate("/");
     } catch (error) {
       console.error("Erreur lors de la fin du jeu :", error);
     }
-  };
+  };  
 
   const roundScore = (score) => {
     const remainder = score % 10;

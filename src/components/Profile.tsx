@@ -1,7 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Trophy, Award, Target, XCircle, Percent, Clock, User } from 'lucide-react';
-import { supabase } from '../supabase';
-import { useAuth } from '../hooks/useAuth';
+import React, { useEffect, useState } from "react";
+import {
+  Trophy,
+  Award,
+  Target,
+  XCircle,
+  Percent,
+  Clock,
+  User,
+} from "lucide-react";
+import { supabase } from "../supabase";
+import { useAuth } from "../hooks/useAuth";
 
 interface ProfileData {
   trigramme: string;
@@ -18,6 +26,8 @@ interface GameHistory {
   score_eux: number;
   winning_team_player1_id: string;
   winning_team_player2_id: string;
+  losing_team_player1_id: string;
+  losing_team_player2_id: string;
 }
 
 export default function Profile() {
@@ -25,29 +35,44 @@ export default function Profile() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [gameHistory, setGameHistory] = useState<GameHistory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     async function loadProfile() {
       try {
-        const [profileResult, gamesResult] = await Promise.all([
-          supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session?.user?.id)
-            .single(),
-          supabase
-            .from('games')
-            .select('*')
-            .eq('player_id', session?.user?.id)
-            .order('created_at', { ascending: false })
-        ]);
+        if (!session?.user?.id) return;
 
-        if (profileResult.error) throw profileResult.error;
-        if (gamesResult.error) throw gamesResult.error;
+        const userId = session.user.id.trim();
 
-        setProfile(profileResult.data);
-        setGameHistory(gamesResult.data);
+        // ✅ Récupérer le profil
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (profileError) throw profileError;
+
+        // ✅ Récupérer toutes les parties où l'utilisateur a joué
+        const { data: games, error: gamesError } = await supabase
+          .from("games")
+          .select("*")
+          .or(
+            `player_id.eq.${userId},winning_team_player1_id.eq.${userId},winning_team_player2_id.eq.${userId},losing_team_player1_id.eq.${userId},losing_team_player2_id.eq.${userId}`
+          )
+          .order("created_at", { ascending: false });
+
+        if (gamesError) {
+          console.error(
+            "Erreur lors de la récupération des parties :",
+            gamesError
+          );
+          return;
+        }
+
+        // ✅ Mettre à jour l'état
+        setProfile(profileData);
+        setGameHistory(games);
       } catch (error: any) {
         setError(error.message);
       } finally {
@@ -85,27 +110,38 @@ export default function Profile() {
         ) : (
           <>
             <div className="text-center mb-8">
-              <h2 className="text-4xl font-bold text-gray-800">{profile?.trigramme}</h2>
-              <p className="text-gray-600 mt-2">Membre depuis {new Date(session?.user?.created_at || '').toLocaleDateString()}</p>
+              <h2 className="text-4xl font-bold text-gray-800">
+                {profile?.trigramme}
+              </h2>
+              <p className="text-gray-600 mt-2">
+                Membre depuis{" "}
+                {new Date(session?.user?.created_at || "").toLocaleDateString()}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <div className="bg-blue-50 p-4 rounded-lg text-center">
                 <Target className="w-6 h-6 text-blue-500 mx-auto mb-2" />
                 <p className="text-sm text-gray-600">Parties jouées</p>
-                <p className="text-2xl font-bold text-gray-800">{profile?.games_played}</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {profile?.games_played}
+                </p>
               </div>
-              
+
               <div className="bg-green-50 p-4 rounded-lg text-center">
                 <Award className="w-6 h-6 text-green-500 mx-auto mb-2" />
                 <p className="text-sm text-gray-600">Victoires</p>
-                <p className="text-2xl font-bold text-gray-800">{profile?.games_won}</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {profile?.games_won}
+                </p>
               </div>
 
               <div className="bg-red-50 p-4 rounded-lg text-center">
                 <XCircle className="w-6 h-6 text-red-500 mx-auto mb-2" />
                 <p className="text-sm text-gray-600">Défaites</p>
-                <p className="text-2xl font-bold text-gray-800">{profile?.games_lost}</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {profile?.games_lost}
+                </p>
               </div>
 
               <div className="bg-yellow-50 p-4 rounded-lg text-center">
@@ -124,23 +160,37 @@ export default function Profile() {
               </h3>
               <div className="space-y-4">
                 {gameHistory.length === 0 ? (
-                  <p className="text-center text-gray-500">Aucune partie jouée</p>
+                  <p className="text-center text-gray-500">
+                    Aucune partie jouée
+                  </p>
                 ) : (
                   gameHistory.map((game) => {
-                    const isWinner = game.winning_team_player1_id === session?.user?.id || 
-                                  game.winning_team_player2_id === session?.user?.id;
-                    
+                    const isWinner =
+                      game.winning_team_player1_id === session?.user?.id ||
+                      game.winning_team_player2_id === session?.user?.id;
+                    const isLoser =
+                      game.losing_team_player1_id === session?.user?.id ||
+                      game.losing_team_player2_id === session?.user?.id;
+
                     return (
                       <div
                         key={game.id}
                         className={`p-4 rounded-lg ${
-                          isWinner ? 'bg-green-50' : 'bg-red-50'
+                          isWinner
+                            ? "bg-green-50"
+                            : isLoser
+                            ? "bg-red-50"
+                            : "bg-gray-50"
                         }`}
                       >
                         <div className="flex justify-between items-center">
                           <div>
                             <span className="font-semibold">
-                              {isWinner ? 'Victoire' : 'Défaite'}
+                              {isWinner
+                                ? "Victoire"
+                                : isLoser
+                                ? "Défaite"
+                                : "Inconnu"}
                             </span>
                             <span className="text-sm text-gray-600 ml-2">
                               {new Date(game.created_at).toLocaleDateString()}
