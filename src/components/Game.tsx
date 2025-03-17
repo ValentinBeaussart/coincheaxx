@@ -1,15 +1,32 @@
-import React, { useState, useEffect, Fragment } from 'react';
-import { Trophy, Flag, ChevronDown } from 'lucide-react';
-import { Dialog, Transition, Disclosure } from '@headlessui/react';
-import { supabase } from '../supabase';
-import { useNavigate } from 'react-router-dom';
-import { BlueHelmet, RedHelmet } from './game/TeamIcons';
-import { announcements, contractValues, suits } from './game/constants';
-import type { Team, Suit, Contract, Player, GameState, Round, BiddingState } from './game/types';
-import GameSetup from './game/GameSetup';
+import React, { useState, useEffect, Fragment } from "react";
+import { Trophy, Flag, ChevronDown } from "lucide-react";
+import { Dialog, Transition, Disclosure } from "@headlessui/react";
+import { supabase } from "../supabase";
+import { useNavigate } from "react-router-dom";
+import { BlueHelmet, RedHelmet } from "./game/TeamIcons";
+import { contractValues, suits } from "./game/constants";
+import { announcements } from "./game/constants";
+import type {
+  Team,
+  Suit,
+  Contract,
+  Player,
+  GameState,
+  Round,
+  BiddingState,
+} from "./game/types";
+import GameSetup from "./game/GameSetup";
 
-const AnnouncementCard = ({ title, points, isSelected, onIncrement, onDecrement, disabled, count }: { 
-  title: string; 
+const AnnouncementCard = ({
+  title,
+  points,
+  isSelected,
+  onIncrement,
+  onDecrement,
+  disabled,
+  count,
+}: {
+  title: string;
   points: number;
   isSelected: boolean;
   onIncrement: () => void;
@@ -17,8 +34,9 @@ const AnnouncementCard = ({ title, points, isSelected, onIncrement, onDecrement,
   disabled: boolean;
   count?: number;
 }) => {
-  const isMultipleAllowed = ['Tierce', 'Cinquante', 'Cent'].includes(title);
-  const displayTitle = isMultipleAllowed && count && count > 0 ? `${title} (${count})` : title;
+  const isMultipleAllowed = ["Tierce", "Cinquante", "Cent"].includes(title);
+  const displayTitle =
+    isMultipleAllowed && count && count > 0 ? `${title} (${count})` : title;
 
   return (
     <div className="relative">
@@ -27,17 +45,17 @@ const AnnouncementCard = ({ title, points, isSelected, onIncrement, onDecrement,
         onClick={onIncrement}
         disabled={disabled}
         className={`${
-          isSelected 
-            ? 'bg-[#0342AF]/10 border-[#0342AF] ring-2 ring-[#0342AF]' 
+          isSelected
+            ? "bg-[#0342AF]/10 border-[#0342AF] ring-2 ring-[#0342AF]"
             : disabled
-              ? 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-50'
-              : 'bg-white hover:bg-gray-50 border-gray-200'
+            ? "bg-gray-100 border-gray-300 cursor-not-allowed opacity-50"
+            : "bg-white hover:bg-gray-50 border-gray-200"
         } p-4 rounded-lg border transition-all duration-200 focus:outline-none w-full text-left min-h-[80px]`}
       >
         <h4 className="font-medium text-gray-900">{displayTitle}</h4>
         <p className="text-sm text-gray-500">{points} points</p>
       </button>
-      
+
       {isMultipleAllowed && isSelected && (
         <div className="absolute right-2 top-2 flex items-center space-x-2">
           <button
@@ -78,25 +96,25 @@ export default function Game() {
       eux2: null,
     },
   });
-  
+
   const [biddingState, setBiddingState] = useState<BiddingState>({
     isBiddingPhase: true,
     currentBid: {
-      team: 'blue',
-      contract: '80',
-      suit: '♥',
+      team: "blue",
+      contract: "80",
+      suit: "♥",
       isCoinched: false,
       isSurCoinched: false,
     },
   });
-
+  const [customContract, setCustomContract] = useState(""); // Pour stocker une valeur libre
   const [isEndGameModalOpen, setIsEndGameModalOpen] = useState(false);
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [currentRound, setCurrentRound] = useState<Round>({
-    team: 'blue',
-    contract: '80',
-    contractType: 'normale',
+    team: "blue",
+    contract: "80",
+    contractType: "normale",
     points: 0,
     blueTeam: {
       beloteRebelote: false,
@@ -109,7 +127,7 @@ export default function Game() {
       lastTrick: false,
     },
     contractFulfilled: false,
-    suit: '♥',
+    suit: "♥",
     bluePoints: 0,
     redPoints: 0,
     isCoinched: false,
@@ -125,12 +143,12 @@ export default function Game() {
 
   const fetchPlayers = async () => {
     const { data, error } = await supabase
-      .from('profiles')
-      .select('id, trigramme')
-      .order('trigramme');
+      .from("profiles")
+      .select("id, trigramme")
+      .order("trigramme");
 
     if (error) {
-      console.error('Error fetching players:', error);
+      console.error("Error fetching players:", error);
       return;
     }
 
@@ -138,11 +156,14 @@ export default function Game() {
   };
 
   const isPlayerSelected = (playerId: string) => {
-    return Object.values(gameState.players).some(p => p?.id === playerId);
+    return Object.values(gameState.players).some((p) => p?.id === playerId);
   };
 
-  const handlePlayerSelect = (position: keyof GameState['players'], player: Player | null) => {
-    setGameState(prev => ({
+  const handlePlayerSelect = (
+    position: keyof GameState["players"],
+    player: Player | null
+  ) => {
+    setGameState((prev) => ({
       ...prev,
       players: {
         ...prev.players,
@@ -152,38 +173,46 @@ export default function Game() {
   };
 
   const areAllPlayersSelected = () => {
-    return Object.values(gameState.players).every(player => player !== null);
+    return Object.values(gameState.players).every((player) => player !== null);
   };
 
   const handleStartGame = async () => {
     try {
       const { data: gameData, error: gameError } = await supabase
-        .from('games')
-        .insert([{
-          player_id: (await supabase.auth.getUser()).data.user?.id,
-          score_nous: 0,
-          score_eux: 0,
-        }])
+        .from("games")
+        .insert([
+          {
+            player_id: (await supabase.auth.getUser()).data.user?.id,
+            score_nous: 0,
+            score_eux: 0,
+          },
+        ])
         .select()
         .single();
 
       if (gameError) throw gameError;
 
-      setGameState(prev => ({
+      setGameState((prev) => ({
         ...prev,
         isSetup: true,
         gameId: gameData.id,
       }));
     } catch (error) {
-      console.error('Error starting game:', error);
+      console.error("Error starting game:", error);
     }
   };
 
   const handleEndGame = async () => {
     try {
       const isBlueWinning = blueScore > redScore;
-      const bluePlayers = [gameState.players.nous1?.id, gameState.players.nous2?.id].filter(Boolean);
-      const redPlayers = [gameState.players.eux1?.id, gameState.players.eux2?.id].filter(Boolean);
+      const bluePlayers = [
+        gameState.players.nous1?.id,
+        gameState.players.nous2?.id,
+      ].filter(Boolean);
+      const redPlayers = [
+        gameState.players.eux1?.id,
+        gameState.players.eux2?.id,
+      ].filter(Boolean);
 
       const allPlayers = [...bluePlayers, ...redPlayers];
 
@@ -194,14 +223,18 @@ export default function Game() {
 
       if (gameState.gameId) {
         const { error: gameError } = await supabase
-          .from('games')
+          .from("games")
           .update({
             score_nous: blueScore,
             score_eux: redScore,
-            winning_team_player1_id: isBlueWinning ? bluePlayers[0] : redPlayers[0],
-            winning_team_player2_id: isBlueWinning ? bluePlayers[1] : redPlayers[1],
+            winning_team_player1_id: isBlueWinning
+              ? bluePlayers[0]
+              : redPlayers[0],
+            winning_team_player2_id: isBlueWinning
+              ? bluePlayers[1]
+              : redPlayers[1],
           })
-          .eq('id', gameState.gameId);
+          .eq("id", gameState.gameId);
 
         if (gameError) {
           console.error("Erreur lors de la mise à jour du jeu :", gameError);
@@ -210,34 +243,42 @@ export default function Game() {
       }
 
       const { data: profiles, error: fetchError } = await supabase
-        .from('profiles')
-        .select('id, games_played, games_won, games_lost')
-        .in('id', allPlayers);
+        .from("profiles")
+        .select("id, games_played, games_won, games_lost")
+        .in("id", allPlayers);
 
       if (fetchError) {
-        console.error("Erreur lors de la récupération des joueurs :", fetchError);
+        console.error(
+          "Erreur lors de la récupération des joueurs :",
+          fetchError
+        );
         return;
       }
 
       const updates = profiles.map((profile) => {
-        const isWinner = isBlueWinning ? bluePlayers.includes(profile.id) : redPlayers.includes(profile.id);
+        const isWinner = isBlueWinning
+          ? bluePlayers.includes(profile.id)
+          : redPlayers.includes(profile.id);
 
         return supabase
-          .from('profiles')
+          .from("profiles")
           .update({
             games_played: profile.games_played + 1,
             games_won: profile.games_won + (isWinner ? 1 : 0),
             games_lost: profile.games_lost + (isWinner ? 0 : 1),
-            win_percentage: ((profile.games_won + (isWinner ? 1 : 0)) / (profile.games_played + 1)) * 100,
+            win_percentage:
+              ((profile.games_won + (isWinner ? 1 : 0)) /
+                (profile.games_played + 1)) *
+              100,
           })
-          .eq('id', profile.id);
+          .eq("id", profile.id);
       });
 
       await Promise.all(updates);
 
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Erreur lors de la fin du jeu :', error);
+      console.error("Erreur lors de la fin du jeu :", error);
     }
   };
 
@@ -246,108 +287,130 @@ export default function Game() {
     if (remainder >= 6) return score + (10 - remainder);
     return score - remainder;
   };
-  
-  const getAnnouncementPoints = (announcements) => 
-    announcements.reduce((total, a) => total + (announcements.find(x => x.title === a)?.points || 0), 0);
-  
-const calculateRoundScore = (round: Round) => {
-  let blueScore = 0;
-  let redScore = 0;
 
-  let contractValue = round.contract === 'capot' ? 250 : parseInt(round.contract);
-  const multiplier = round.isSurCoinched ? 4 : round.isCoinched ? 2 : 1;
-  contractValue *= multiplier;
+  const getAnnouncementPoints = (announcementTitles: string[]) =>
+    announcementTitles.reduce((total, title) => {
+      const announcement = announcements.find((a) => a.title === title);
+      return total + (announcement?.points || 0);
+    }, 0);
 
-  const lastTrickPoints = 10;
-  
-  // Calcul des points de chaque équipe
-  const totalBluePoints = 
-    round.bluePoints + 
-    (round.blueTeam.lastTrick ? lastTrickPoints : 0) + 
-    (round.blueTeam.beloteRebelote ? 20 : 0) + 
-    getAnnouncementPoints(round.blueTeam.announcements);
-  
-  const totalRedPoints = 
-    round.redPoints + 
-    (round.redTeam.lastTrick ? lastTrickPoints : 0) + 
-    (round.redTeam.beloteRebelote ? 20 : 0) + 
-    getAnnouncementPoints(round.redTeam.announcements);
+  const calculateRoundScore = (round: Round) => {
+    let blueScore = 0;
+    let redScore = 0;
 
-  // Vérifier si le contrat est rempli
-  const contractMet = round.team === 'blue' 
-    ? totalBluePoints >= contractValue 
-    : totalRedPoints >= contractValue;
+    let baseContractValue =
+      round.contract === "capot" ? 250 : parseInt(round.contract);
+    const multiplier = round.isSurCoinched ? 4 : round.isCoinched ? 2 : 1;
+    let contractValue = baseContractValue * multiplier;
 
-  if (contractMet) {
-    // L'équipe qui a pris a réussi son contrat
-    if (round.team === 'blue') {
-      blueScore = contractValue + totalBluePoints;
-      redScore = totalRedPoints;
+    const lastTrickPoints = 10;
+
+    // ✅ Ajouter Belote-Rebelote DANS les points pour remplir le contrat
+    let totalBluePoints =
+      round.bluePoints +
+      (round.blueTeam.lastTrick ? lastTrickPoints : 0) +
+      getAnnouncementPoints(round.blueTeam.announcements) +
+      (round.blueTeam.beloteRebelote ? 20 : 0); // ✅ Belote-Rebelote incluse
+
+    let totalRedPoints =
+      round.redPoints +
+      (round.redTeam.lastTrick ? lastTrickPoints : 0) +
+      getAnnouncementPoints(round.redTeam.announcements) +
+      (round.redTeam.beloteRebelote ? 20 : 0); // ✅ Belote-Rebelote incluse
+
+    // ✅ Vérifier le contrat avec Belote-Rebelote incluse
+    const contractMet =
+      round.team === "blue"
+        ? totalBluePoints >= baseContractValue
+        : totalRedPoints >= baseContractValue;
+
+    if (contractMet) {
+      // ✅ Contrat réussi → L’équipe garde ses annonces
+      if (round.team === "blue") {
+        blueScore = contractValue + totalBluePoints;
+        redScore = totalRedPoints;
+      } else {
+        redScore = contractValue + totalRedPoints;
+        blueScore = totalBluePoints;
+      }
     } else {
-      redScore = contractValue + totalRedPoints;
-      blueScore = totalBluePoints;
+      // ❌ Contrat chuté → l’adversaire prend le contrat + 160 + annonces
+      if (round.team === "blue") {
+        blueScore = 20; // ✅ Blue garde seulement Belote-Rebelote
+        redScore =
+          contractValue +
+          160 +
+          getAnnouncementPoints(round.blueTeam.announcements) +
+          getAnnouncementPoints(round.redTeam.announcements);
+      } else {
+        redScore = 20; // ✅ Red garde seulement Belote-Rebelote
+        blueScore =
+          contractValue +
+          160 +
+          getAnnouncementPoints(round.redTeam.announcements) +
+          getAnnouncementPoints(round.blueTeam.announcements);
+      }
     }
-  } else {
-    // L'équipe qui a pris chute
-    if (round.team === 'blue') {
-      blueScore = 0;
-      redScore = contractValue + 160 + getAnnouncementPoints(round.blueTeam.announcements);
-    } else {
-      redScore = 0;
-      blueScore = contractValue + 160 + getAnnouncementPoints(round.redTeam.announcements);
-    }
-  }
 
-  return { bluePoints: roundScore(blueScore), redPoints: roundScore(redScore) };
-};
-  
-  
-  
-  
+    return {
+      bluePoints: roundScore(blueScore),
+      redPoints: roundScore(redScore),
+    };
+  };
 
   const handleBidSubmit = () => {
-    setCurrentRound(prev => ({
+    setCurrentRound((prev) => ({
       ...prev,
       team: biddingState.currentBid.team,
       contract: biddingState.currentBid.contract,
       suit: biddingState.currentBid.suit,
       isCoinched: biddingState.currentBid.isCoinched,
       isSurCoinched: biddingState.currentBid.isSurCoinched,
-      contractType: 'normale',
+      contractType: "normale",
     }));
-    setBiddingState(prev => ({ ...prev, isBiddingPhase: false }));
+    setBiddingState((prev) => ({ ...prev, isBiddingPhase: false }));
   };
 
   const handlePointsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const roundScore = calculateRoundScore(currentRound);
-    
-    setBlueScore(prev => prev + roundScore.bluePoints);
-    setRedScore(prev => prev + roundScore.redPoints);
 
-    setRounds(prev => [...prev, { 
-      ...currentRound,
-      points: roundScore.bluePoints + roundScore.redPoints,
-      contractFulfilled: currentRound.team === 'blue' ? 
-        currentRound.bluePoints >= (currentRound.contract === 'capot' ? 250 : parseInt(currentRound.contract)) :
-        currentRound.redPoints >= (currentRound.contract === 'capot' ? 250 : parseInt(currentRound.contract)),
-    }]);
-    
+    const roundScore = calculateRoundScore(currentRound);
+
+    setBlueScore((prev) => prev + roundScore.bluePoints);
+    setRedScore((prev) => prev + roundScore.redPoints);
+
+    setRounds((prev) => [
+      ...prev,
+      {
+        ...currentRound,
+        points: roundScore.bluePoints + roundScore.redPoints,
+        contractFulfilled:
+          currentRound.team === "blue"
+            ? currentRound.bluePoints >=
+              (currentRound.contract === "capot"
+                ? 250
+                : parseInt(currentRound.contract))
+            : currentRound.redPoints >=
+              (currentRound.contract === "capot"
+                ? 250
+                : parseInt(currentRound.contract)),
+      },
+    ]);
+
     setBiddingState({
       isBiddingPhase: true,
       currentBid: {
-        team: 'blue',
-        contract: '80',
-        suit: '♥',
+        team: "blue",
+        contract: "80",
+        suit: "♥",
         isCoinched: false,
         isSurCoinched: false,
       },
     });
     setCurrentRound({
-      team: 'blue',
-      contract: '80',
-      contractType: 'normale',
+      team: "blue",
+      contract: "80",
+      contractType: "normale",
       points: 0,
       blueTeam: {
         beloteRebelote: false,
@@ -360,7 +423,7 @@ const calculateRoundScore = (round: Round) => {
         lastTrick: false,
       },
       contractFulfilled: false,
-      suit: '♥',
+      suit: "♥",
       bluePoints: 0,
       redPoints: 0,
       isCoinched: false,
@@ -368,13 +431,16 @@ const calculateRoundScore = (round: Round) => {
     });
   };
 
-  const toggleAnnouncement = (team: 'blueTeam' | 'redTeam', announcement: string) => {
-    setCurrentRound(prev => {
+  const toggleAnnouncement = (
+    team: "blueTeam" | "redTeam",
+    announcement: string
+  ) => {
+    setCurrentRound((prev) => {
       const currentAnnouncements = prev[team].announcements;
-      const otherTeam = team === 'blueTeam' ? 'redTeam' : 'blueTeam';
-      
+      const otherTeam = team === "blueTeam" ? "redTeam" : "blueTeam";
+
       // Special handling for Belote-Rebelote
-      if (announcement === 'Belote-Rebelote') {
+      if (announcement === "Belote-Rebelote") {
         // If the other team has Belote-Rebelote, don't allow it
         if (prev[otherTeam].beloteRebelote) {
           return prev;
@@ -383,63 +449,68 @@ const calculateRoundScore = (round: Round) => {
           ...prev,
           [team]: {
             ...prev[team],
-            beloteRebelote: !prev[team].beloteRebelote
-          }
+            beloteRebelote: !prev[team].beloteRebelote,
+          },
         };
       }
-      
+
       // For Tierce, Cinquante, and Cent, allow multiple instances
-      if (['Tierce', 'Cinquante', 'Cent'].includes(announcement)) {
+      if (["Tierce", "Cinquante", "Cent"].includes(announcement)) {
         const newAnnouncements = [...currentAnnouncements];
-        const count = currentAnnouncements.filter(a => a === announcement).length;
-        
+        const count = currentAnnouncements.filter(
+          (a) => a === announcement
+        ).length;
+
         // Add a new instance
         newAnnouncements.push(announcement);
-        
+
         return {
           ...prev,
           [team]: {
             ...prev[team],
-            announcements: newAnnouncements
-          }
+            announcements: newAnnouncements,
+          },
         };
       }
-      
+
       // For other announcements (Carrés), if the other team has it, don't allow it
       if (prev[otherTeam].announcements.includes(announcement)) {
         return prev;
       }
-      
+
       const newAnnouncements = currentAnnouncements.includes(announcement)
-        ? currentAnnouncements.filter(a => a !== announcement)
+        ? currentAnnouncements.filter((a) => a !== announcement)
         : [...currentAnnouncements, announcement];
-      
+
       return {
         ...prev,
         [team]: {
           ...prev[team],
-          announcements: newAnnouncements
-        }
+          announcements: newAnnouncements,
+        },
       };
     });
   };
 
-  const removeAnnouncement = (team: 'blueTeam' | 'redTeam', announcement: string) => {
-    setCurrentRound(prev => {
+  const removeAnnouncement = (
+    team: "blueTeam" | "redTeam",
+    announcement: string
+  ) => {
+    setCurrentRound((prev) => {
       const currentAnnouncements = prev[team].announcements;
       const lastIndex = currentAnnouncements.lastIndexOf(announcement);
-      
+
       if (lastIndex === -1) return prev;
-      
+
       const newAnnouncements = [...currentAnnouncements];
       newAnnouncements.splice(lastIndex, 1);
-      
+
       return {
         ...prev,
         [team]: {
           ...prev[team],
-          announcements: newAnnouncements
-        }
+          announcements: newAnnouncements,
+        },
       };
     });
   };
@@ -483,7 +554,8 @@ const calculateRoundScore = (round: Round) => {
               <span className="ml-2">Blue Team</span>
             </h2>
             <div className="text-sm text-gray-600 mb-2">
-              {gameState.players.nous1?.trigramme} - {gameState.players.nous2?.trigramme}
+              {gameState.players.nous1?.trigramme} -{" "}
+              {gameState.players.nous2?.trigramme}
             </div>
             <p className="text-3xl font-bold text-blue-800">{blueScore}</p>
           </div>
@@ -493,7 +565,8 @@ const calculateRoundScore = (round: Round) => {
               <span className="ml-2">Red Team</span>
             </h2>
             <div className="text-sm text-gray-600 mb-2">
-              {gameState.players.eux1?.trigramme} - {gameState.players.eux2?.trigramme}
+              {gameState.players.eux1?.trigramme} -{" "}
+              {gameState.players.eux2?.trigramme}
             </div>
             <p className="text-3xl font-bold text-red-800">{redScore}</p>
           </div>
@@ -504,14 +577,21 @@ const calculateRoundScore = (round: Round) => {
             <h3 className="text-xl font-semibold mb-6">Phase d'Enchères</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Équipe</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Équipe
+                </label>
                 <select
                   className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0342AF] focus:ring-[#0342AF] text-base py-3"
                   value={biddingState.currentBid.team}
-                  onChange={(e) => setBiddingState(prev => ({
-                    ...prev,
-                    currentBid: { ...prev.currentBid, team: e.target.value as Team }
-                  }))}
+                  onChange={(e) =>
+                    setBiddingState((prev) => ({
+                      ...prev,
+                      currentBid: {
+                        ...prev.currentBid,
+                        team: e.target.value as Team,
+                      },
+                    }))
+                  }
                 >
                   <option value="blue">Blue Team</option>
                   <option value="red">Red Team</option>
@@ -519,39 +599,87 @@ const calculateRoundScore = (round: Round) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Contrat</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Contrat
+                </label>
                 <select
                   className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0342AF] focus:ring-[#0342AF] text-base py-3"
                   value={biddingState.currentBid.contract}
-                  onChange={(e) => setBiddingState(prev => ({
-                    ...prev,
-                    currentBid: { ...prev.currentBid, contract: e.target.value as Contract }
-                  }))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "custom") {
+                      setCustomContract(""); // Réinitialise la valeur libre
+                      setBiddingState((prev) => ({
+                        ...prev,
+                        currentBid: { ...prev.currentBid, contract: "" },
+                      }));
+                    } else {
+                      setBiddingState((prev) => ({
+                        ...prev,
+                        currentBid: { ...prev.currentBid, contract: value },
+                      }));
+                    }
+                  }}
                 >
-                  {contractValues.map(value => (
-                    <option key={value} value={value}>{value}</option>
-                  ))}
+                  {["80", "90", "100", "110", "120", "130", "140", "150"].map(
+                    (value) => (
+                      <option key={value} value={value}>
+                        {value}
+                      </option>
+                    )
+                  )}
+                  <option value="capot">Capot (250 pts)</option>
+                  <option value="general">Général (500 pts)</option>
+                  <option value="custom">Autre...</option>
                 </select>
+
+                {/* Afficher un champ input si "Autre" est sélectionné */}
+                {biddingState.currentBid.contract === "" && (
+                  <input
+                    type="number"
+                    placeholder="Entrez un contrat"
+                    className="mt-2 block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0342AF] focus:ring-[#0342AF] text-base py-3"
+                    value={customContract}
+                    onChange={(e) => setCustomContract(e.target.value)}
+                    onBlur={() => {
+                      if (customContract.trim() !== "") {
+                        setBiddingState((prev) => ({
+                          ...prev,
+                          currentBid: {
+                            ...prev.currentBid,
+                            contract: customContract,
+                          },
+                        }));
+                      }
+                    }}
+                  />
+                )}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Couleur</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Couleur
+              </label>
               <div className="grid grid-cols-4 gap-2">
-                {suits.map(suit => (
+                {suits.map((suit) => (
                   <button
                     key={suit}
                     type="button"
-                    onClick={() => setBiddingState(prev => ({
-                      ...prev,
-                      currentBid: { ...prev.currentBid, suit }
-                    }))}
+                    onClick={() =>
+                      setBiddingState((prev) => ({
+                        ...prev,
+                        currentBid: { ...prev.currentBid, suit },
+                      }))
+                    }
                     className={`p-4 text-2xl rounded-lg ${
                       biddingState.currentBid.suit === suit
-                        ? 'bg-[#0342AF]/10 border-2 border-[#0342AF]'
-                        : 'bg-gray-100 hover:bg-gray-200'
+                        ? "bg-[#0342AF]/10 border-2 border-[#0342AF]"
+                        : "bg-gray-100 hover:bg-gray-200"
                     } ${
-                      suit === '♥' || suit === '♦' ? 'text-red-600' : 'text-gray-900'
+                      suit === "♥" || suit === "♦"
+                        ? "text-red-600"
+                        : "text-gray-900"
                     } aspect-square flex items-center justify-center`}
                   >
                     {suit}
@@ -563,18 +691,20 @@ const calculateRoundScore = (round: Round) => {
             <div className="flex gap-4 mt-4">
               <button
                 type="button"
-                onClick={() => setBiddingState(prev => ({
-                  ...prev,
-                  currentBid: { 
-                    ...prev.currentBid, 
-                    isCoinched: !prev.currentBid.isCoinched,
-                    isSurCoinched: false
-                  }
-                }))}
+                onClick={() =>
+                  setBiddingState((prev) => ({
+                    ...prev,
+                    currentBid: {
+                      ...prev.currentBid,
+                      isCoinched: !prev.currentBid.isCoinched,
+                      isSurCoinched: false,
+                    },
+                  }))
+                }
                 className={`flex-1 py-3 px-4 rounded-lg text-base font-medium ${
                   biddingState.currentBid.isCoinched
-                    ? 'bg-yellow-500 text-white'
-                    : 'bg-yellow-100 text-yellow-700'
+                    ? "bg-yellow-500 text-white"
+                    : "bg-yellow-100 text-yellow-700"
                 }`}
               >
                 Coinché
@@ -582,19 +712,21 @@ const calculateRoundScore = (round: Round) => {
               <button
                 type="button"
                 disabled={!biddingState.currentBid.isCoinched}
-                onClick={() => setBiddingState(prev => ({
-                  ...prev,
-                  currentBid: { 
-                    ...prev.currentBid, 
-                    isSurCoinched: !prev.currentBid.isSurCoinched 
-                  }
-                }))}
+                onClick={() =>
+                  setBiddingState((prev) => ({
+                    ...prev,
+                    currentBid: {
+                      ...prev.currentBid,
+                      isSurCoinched: !prev.currentBid.isSurCoinched,
+                    },
+                  }))
+                }
                 className={`flex-1 py-3 px-4 rounded-lg text-base font-medium ${
                   biddingState.currentBid.isSurCoinched
-                    ? 'bg-orange-500 text-white'
+                    ? "bg-orange-500 text-white"
                     : biddingState.currentBid.isCoinched
-                    ? 'bg-orange-100 text-orange-700'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    ? "bg-orange-100 text-orange-700"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
                 }`}
               >
                 Surcoinché
@@ -611,7 +743,7 @@ const calculateRoundScore = (round: Round) => {
         ) : (
           <form onSubmit={handlePointsSubmit} className="space-y-6">
             <h3 className="text-xl font-semibold mb-6">Points du Tour</h3>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -620,10 +752,12 @@ const calculateRoundScore = (round: Round) => {
                 <input
                   type="number"
                   value={currentRound.bluePoints}
-                  onChange={(e) => setCurrentRound(prev => ({
-                    ...prev,
-                    bluePoints: parseInt(e.target.value) || 0
-                  }))}
+                  onChange={(e) =>
+                    setCurrentRound((prev) => ({
+                      ...prev,
+                      bluePoints: parseInt(e.target.value) || 0,
+                    }))
+                  }
                   className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0342AF] focus:ring-[#0342AF] text-base py-3"
                 />
               </div>
@@ -635,10 +769,12 @@ const calculateRoundScore = (round: Round) => {
                 <input
                   type="number"
                   value={currentRound.redPoints}
-                  onChange={(e) => setCurrentRound(prev => ({
-                    ...prev,
-                    redPoints: parseInt(e.target.value) || 0
-                  }))}
+                  onChange={(e) =>
+                    setCurrentRound((prev) => ({
+                      ...prev,
+                      redPoints: parseInt(e.target.value) || 0,
+                    }))
+                  }
                   className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#0342AF] focus:ring-[#0342AF] text-base py-3"
                 />
               </div>
@@ -647,30 +783,34 @@ const calculateRoundScore = (round: Round) => {
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => setCurrentRound(prev => ({
-                  ...prev,
-                  blueTeam: { ...prev.blueTeam, lastTrick: true },
-                  redTeam: { ...prev.redTeam, lastTrick: false }
-                }))}
+                onClick={() =>
+                  setCurrentRound((prev) => ({
+                    ...prev,
+                    blueTeam: { ...prev.blueTeam, lastTrick: true },
+                    redTeam: { ...prev.redTeam, lastTrick: false },
+                  }))
+                }
                 className={`py-3 px-4 rounded-lg text-base font-medium ${
                   currentRound.blueTeam.lastTrick
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-blue-100 text-blue-700'
+                    ? "bg-blue-500 text-white"
+                    : "bg-blue-100 text-blue-700"
                 }`}
               >
                 Dernier pli Blue
               </button>
               <button
                 type="button"
-                onClick={() => setCurrentRound(prev => ({
-                  ...prev,
-                  blueTeam: { ...prev.blueTeam, lastTrick: false },
-                  redTeam: { ...prev.redTeam, lastTrick: true }
-                }))}
+                onClick={() =>
+                  setCurrentRound((prev) => ({
+                    ...prev,
+                    blueTeam: { ...prev.blueTeam, lastTrick: false },
+                    redTeam: { ...prev.redTeam, lastTrick: true },
+                  }))
+                }
                 className={`py-3 px-4 rounded-lg text-base font-medium ${
                   currentRound.redTeam.lastTrick
-                    ? 'bg-red-500 text-white'
-                    : 'bg-red-100 text-red-700'
+                    ? "bg-red-500 text-white"
+                    : "bg-red-100 text-red-700"
                 }`}
               >
                 Dernier pli Red
@@ -685,31 +825,48 @@ const calculateRoundScore = (round: Round) => {
                       <span>Annonces Blue Team</span>
                       <ChevronDown
                         className={`${
-                          open ? 'transform rotate-180' : ''
+                          open ? "transform rotate-180" : ""
                         } w-5 h-5 text-[#0342AF]`}
                       />
                     </Disclosure.Button>
                     <Disclosure.Panel className="px-4 pt-4 pb-2">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {announcements.map(announcement => {
-                          const count = currentRound.blueTeam.announcements.filter(a => a === announcement.title).length;
+                        {announcements.map((announcement) => {
+                          const count =
+                            currentRound.blueTeam.announcements.filter(
+                              (a) => a === announcement.title
+                            ).length;
                           return (
                             <AnnouncementCard
                               key={announcement.title}
                               title={announcement.title}
                               points={announcement.points}
                               isSelected={
-                                announcement.title === 'Belote-Rebelote'
+                                announcement.title === "Belote-Rebelote"
                                   ? currentRound.blueTeam.beloteRebelote
                                   : count > 0
                               }
-                              onIncrement={() => toggleAnnouncement('blueTeam', announcement.title)}
-                              onDecrement={() => removeAnnouncement('blueTeam', announcement.title)}
+                              onIncrement={() =>
+                                toggleAnnouncement(
+                                  "blueTeam",
+                                  announcement.title
+                                )
+                              }
+                              onDecrement={() =>
+                                removeAnnouncement(
+                                  "blueTeam",
+                                  announcement.title
+                                )
+                              }
                               disabled={
-                                announcement.title === 'Belote-Rebelote'
+                                announcement.title === "Belote-Rebelote"
                                   ? currentRound.redTeam.beloteRebelote
-                                  : !['Tierce', 'Cinquante', 'Cent'].includes(announcement.title) && 
-                                    currentRound.redTeam.announcements.includes(announcement.title)
+                                  : !["Tierce", "Cinquante", "Cent"].includes(
+                                      announcement.title
+                                    ) &&
+                                    currentRound.redTeam.announcements.includes(
+                                      announcement.title
+                                    )
                               }
                               count={count}
                             />
@@ -728,31 +885,48 @@ const calculateRoundScore = (round: Round) => {
                       <span>Annonces Red Team</span>
                       <ChevronDown
                         className={`${
-                          open ? 'transform rotate-180' : ''
+                          open ? "transform rotate-180" : ""
                         } w-5 h-5 text-red-600`}
                       />
                     </Disclosure.Button>
                     <Disclosure.Panel className="px-4 pt-4 pb-2">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {announcements.map(announcement => {
-                          const count = currentRound.redTeam.announcements.filter(a => a === announcement.title).length;
+                        {announcements.map((announcement) => {
+                          const count =
+                            currentRound.redTeam.announcements.filter(
+                              (a) => a === announcement.title
+                            ).length;
                           return (
                             <AnnouncementCard
                               key={announcement.title}
                               title={announcement.title}
                               points={announcement.points}
                               isSelected={
-                                announcement.title === 'Belote-Rebelote'
+                                announcement.title === "Belote-Rebelote"
                                   ? currentRound.redTeam.beloteRebelote
                                   : count > 0
                               }
-                              onIncrement={() => toggleAnnouncement('redTeam', announcement.title)}
-                              onDecrement={() => removeAnnouncement('redTeam', announcement.title)}
+                              onIncrement={() =>
+                                toggleAnnouncement(
+                                  "redTeam",
+                                  announcement.title
+                                )
+                              }
+                              onDecrement={() =>
+                                removeAnnouncement(
+                                  "redTeam",
+                                  announcement.title
+                                )
+                              }
                               disabled={
-                                announcement.title === 'Belote-Rebelote'
+                                announcement.title === "Belote-Rebelote"
                                   ? currentRound.blueTeam.beloteRebelote
-                                  : !['Tierce', 'Cinquante', 'Cent'].includes(announcement.title) && 
-                                    currentRound.blueTeam.announcements.includes(announcement.title)
+                                  : !["Tierce", "Cinquante", "Cent"].includes(
+                                      announcement.title
+                                    ) &&
+                                    currentRound.blueTeam.announcements.includes(
+                                      announcement.title
+                                    )
                               }
                               count={count}
                             />
@@ -782,7 +956,7 @@ const calculateRoundScore = (round: Round) => {
                   <span>Historique des Tours</span>
                   <ChevronDown
                     className={`${
-                      open ? 'transform rotate-180' : ''
+                      open ? "transform rotate-180" : ""
                     } w-5 h-5 text-gray-500`}
                   />
                 </Disclosure.Button>
@@ -792,43 +966,65 @@ const calculateRoundScore = (round: Round) => {
                       <div
                         key={index}
                         className={`p-4 rounded-lg ${
-                          round.team === 'blue' ? 'bg-blue-50' : 'bg-red-50'
+                          round.team === "blue" ? "bg-blue-50" : "bg-red-50"
                         }`}
                       >
                         <div className="flex justify-between items-center">
                           <div>
                             <span className="font-semibold">
-                              {round.team === 'blue' ? 'Blue Team' : 'Red Team'} - {round.contract} {round.suit}
-                              {round.isCoinched && ' (Coinché)'}
-                              {round.isSurCoinched && ' (Surcoinché)'}
+                              {round.team === "blue" ? "Blue Team" : "Red Team"}{" "}
+                              - {round.contract} {round.suit}
+                              {round.isCoinched && " (Coinché)"}
+                              {round.isSurCoinched && " (Surcoinché)"}
                             </span>
                           </div>
-                          <span className={`font-bold ${round.contractFulfilled ? 'text-green-600' : 'text-red-600'}`}>
-                            {round.contractFulfilled ? 'Réussi' : 'Chuté'}
+                          <span
+                            className={`font-bold ${
+                              round.contractFulfilled
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {round.contractFulfilled ? "Réussi" : "Chuté"}
                           </span>
                         </div>
                         <div className="mt-2 text-sm text-gray-600">
-                          Points: Blue {round.bluePoints} - Red {round.redPoints}
-                          {(round.blueTeam.lastTrick || round.redTeam.lastTrick) && (
+                          Points: Blue {round.bluePoints} - Red{" "}
+                          {round.redPoints}
+                          {(round.blueTeam.lastTrick ||
+                            round.redTeam.lastTrick) && (
                             <span className="ml-2">
-                              (Dernier pli: {round.blueTeam.lastTrick ? 'Blue' : 'Red'})
+                              (Dernier pli:{" "}
+                              {round.blueTeam.lastTrick ? "Blue" : "Red"})
                             </span>
                           )}
                         </div>
-                        {(round.blueTeam.announcements.length > 0 || round.blueTeam.beloteRebelote) && (
+                        {(round.blueTeam.announcements.length > 0 ||
+                          round.blueTeam.beloteRebelote) && (
                           <div className="mt-1 text-sm text-blue-600">
-                            Blue Team: {[
+                            Blue Team:{" "}
+                            {[
                               ...round.blueTeam.announcements,
-                              round.blueTeam.beloteRebelote ? 'Belote-Rebelote' : ''
-                            ].filter(Boolean).join(', ')}
+                              round.blueTeam.beloteRebelote
+                                ? "Belote-Rebelote"
+                                : "",
+                            ]
+                              .filter(Boolean)
+                              .join(", ")}
                           </div>
                         )}
-                        {(round.redTeam.announcements.length > 0 || round.redTeam.beloteRebelote) && (
+                        {(round.redTeam.announcements.length > 0 ||
+                          round.redTeam.beloteRebelote) && (
                           <div className="mt-1 text-sm text-red-600">
-                            Red Team: {[
+                            Red Team:{" "}
+                            {[
                               ...round.redTeam.announcements,
-                              round.redTeam.beloteRebelote ? 'Belote-Rebelote' : ''
-                            ].filter(Boolean).join(', ')}
+                              round.redTeam.beloteRebelote
+                                ? "Belote-Rebelote"
+                                : "",
+                            ]
+                              .filter(Boolean)
+                              .join(", ")}
                           </div>
                         )}
                       </div>
@@ -842,7 +1038,11 @@ const calculateRoundScore = (round: Round) => {
       </div>
 
       <Transition appear show={isEndGameModalOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={() => setIsEndGameModalOpen(false)}>
+        <Dialog
+          as="div"
+          className="relative z-10"
+          onClose={() => setIsEndGameModalOpen(false)}
+        >
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
