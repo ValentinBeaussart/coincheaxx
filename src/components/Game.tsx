@@ -316,10 +316,12 @@ export default function Game() {
       (round.redTeam.beloteRebelote ? 20 : 0); // ✅ Belote-Rebelote incluse
 
     // ✅ Vérifier le contrat avec Belote-Rebelote incluse
+    const minPointsToMakeOtherTeamFail = 83; // 🔹 Si l'adversaire atteint 83, l'autre équipe chute
+
     const contractMet =
       round.team === "blue"
-        ? totalBluePoints >= baseContractValue
-        : totalRedPoints >= baseContractValue;
+        ? totalBluePoints >= baseContractValue && totalRedPoints < minPointsToMakeOtherTeamFail
+        : totalRedPoints >= baseContractValue && totalBluePoints < minPointsToMakeOtherTeamFail;
 
     if (contractMet) {
       // ✅ Contrat réussi → L’équipe garde ses annonces
@@ -333,18 +335,18 @@ export default function Game() {
     } else {
       // ❌ Contrat chuté → l’adversaire prend le contrat + 160 + annonces
       if (round.team === "blue") {
-        blueScore = 20; // ✅ Blue garde seulement Belote-Rebelote
+        blueScore = round.blueTeam.beloteRebelote ? 20 : 0; // ✅ L'équipe chute → elle ne garde que Belote-Rebelote
         redScore =
           contractValue +
           160 +
-          getAnnouncementPoints(round.blueTeam.announcements) +
+          getAnnouncementPoints(round.blueTeam.announcements) + // ✅ L'adversaire prend les annonces
           getAnnouncementPoints(round.redTeam.announcements);
       } else {
-        redScore = 20; // ✅ Red garde seulement Belote-Rebelote
+        redScore = round.redTeam.beloteRebelote ? 20 : 0; // ✅ L'équipe chute → elle ne garde que Belote-Rebelote
         blueScore =
           contractValue +
           160 +
-          getAnnouncementPoints(round.redTeam.announcements) +
+          getAnnouncementPoints(round.redTeam.announcements) + // ✅ L'adversaire prend les annonces
           getAnnouncementPoints(round.blueTeam.announcements);
       }
     }
