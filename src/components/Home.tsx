@@ -43,7 +43,7 @@ export default function Home() {
       {topPlayers.length > 0 && (
         <div className="bg-white rounded-lg shadow-xl p-8">
           <h2 className="text-2xl font-bold text-center mb-8">Les GOATS</h2>
-          <div className="flex justify-center items-end space-x-8 mb-8">
+          <div className="flex justify-center items-end space-x-3 sm:space-x-8 mb-8">
             {topPlayers[1] && (
               <div className="text-center">
                 <div className="w-24 h-32 bg-gray-100 rounded-t-lg flex items-center justify-center mb-4">
@@ -115,7 +115,7 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-center mb-8">
             Les Joueurs en difficultés...
           </h2>
-          <div className="flex justify-center items-end space-x-8 mb-8">
+          <div className="flex justify-center items-end space-x-3 sm:space-x-8 mb-8">
             {worstPlayers[1] && (
               <div className="text-center">
                 <div className="w-24 h-32 bg-gray-100 rounded-t-lg flex items-center justify-center mb-4">
