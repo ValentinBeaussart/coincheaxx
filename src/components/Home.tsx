@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { PlayCircle, Trophy, Medal, Club, Frown } from "lucide-react";
 import { supabase } from "../supabase";
+import { Link } from "react-router-dom";
 
 interface Player {
   trigramme: string;
@@ -20,9 +21,13 @@ export default function Home() {
         .gte("games_played", 10);
 
       if (allPlayers) {
-        const sortedPlayers = allPlayers.sort((a, b) => b.win_percentage - a.win_percentage);
+        const sortedPlayers = allPlayers.sort(
+          (a, b) => b.win_percentage - a.win_percentage
+        );
         const topFiltered = sortedPlayers.slice(0, 3);
-        const worstFiltered = sortedPlayers.filter(player => !topFiltered.includes(player)).slice(0, 3);
+        const worstFiltered = sortedPlayers
+          .filter((player) => !topFiltered.includes(player))
+          .slice(0, 3);
         worstFiltered.sort((a, b) => a.win_percentage - b.win_percentage);
 
         setTopPlayers(topFiltered);
@@ -45,12 +50,13 @@ export default function Home() {
                   <Medal className="w-12 h-12 text-gray-400" />
                 </div>
                 <div className="bg-gray-100 p-4 rounded-lg">
-                <a
-                    href={`/profile/${topPlayers[1].trigramme}`}
+                  <Link
+                    to={`/profile/${topPlayers[1].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
                   >
                     {topPlayers[1].trigramme}
-                  </a>                  <p className="text-gray-600">
+                  </Link>{" "}
+                  <p className="text-gray-600">
                     {topPlayers[1].win_percentage.toFixed(1)}%
                   </p>
                   <p className="text-sm text-gray-500">
@@ -65,12 +71,12 @@ export default function Home() {
                   <Trophy className="w-16 h-16 text-[#0342AF]" />
                 </div>
                 <div className="bg-[#0342AF]/10 p-4 rounded-lg">
-                  <a
-                    href={`/profile/${topPlayers[0].trigramme}`}
+                  <Link
+                    to={`/profile/${topPlayers[0].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
                   >
                     {topPlayers[0].trigramme}
-                  </a>
+                  </Link>
                   <p className="text-gray-600 font-semibold">
                     {topPlayers[0].win_percentage.toFixed(1)}%
                   </p>
@@ -86,12 +92,13 @@ export default function Home() {
                   <Medal className="w-10 h-10 text-orange-500" />
                 </div>
                 <div className="bg-orange-100 p-4 rounded-lg">
-                <a
-                    href={`/profile/${topPlayers[2].trigramme}`}
+                  <Link
+                    to={`/profile/${topPlayers[2].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
                   >
                     {topPlayers[2].trigramme}
-                  </a>                  <p className="text-gray-600">
+                  </Link>{" "}
+                  <p className="text-gray-600">
                     {topPlayers[2].win_percentage.toFixed(1)}%
                   </p>
                   <p className="text-sm text-gray-500">
@@ -115,12 +122,12 @@ export default function Home() {
                   <Frown className="w-12 h-12 text-gray-400" />
                 </div>
                 <div className="bg-gray-100 p-4 rounded-lg">
-                <a
-                    href={`/profile/${worstPlayers[1].trigramme}`}
+                  <Link
+                    to={`/profile/${worstPlayers[1].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
                   >
                     {worstPlayers[1].trigramme}
-                  </a>
+                  </Link>
                   <p className="text-gray-600">
                     {worstPlayers[1].win_percentage.toFixed(1)}%
                   </p>
@@ -136,12 +143,12 @@ export default function Home() {
                   <Frown className="w-16 h-16 text-red-500" />
                 </div>
                 <div className="bg-red-100 p-4 rounded-lg">
-                <a
-                    href={`/profile/${worstPlayers[0].trigramme}`}
+                  <Link
+                    to={`/profile/${worstPlayers[0].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
                   >
                     {worstPlayers[0].trigramme}
-                  </a>
+                  </Link>
                   <p className="text-gray-600 font-semibold">
                     {worstPlayers[0].win_percentage.toFixed(1)}%
                   </p>
@@ -157,12 +164,12 @@ export default function Home() {
                   <Frown className="w-10 h-10 text-orange-500" />
                 </div>
                 <div className="bg-orange-100 p-4 rounded-lg">
-                <a
-                    href={`/profile/${worstPlayers[2].trigramme}`}
+                  <Link
+                    to={`/profile/${worstPlayers[2].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
                   >
                     {worstPlayers[2].trigramme}
-                  </a>
+                  </Link>
                   <p className="text-gray-600">
                     {worstPlayers[2].win_percentage.toFixed(1)}%
                   </p>
