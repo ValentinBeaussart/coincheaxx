@@ -216,8 +216,8 @@ export default function Profile() {
       <div className="bg-white rounded-lg shadow-xl p-6 mb-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
-            <User className="w-8 h-8 text-[#0342AF] mr-2" />
-            <h1 className="text-3xl font-bold">Profil</h1>
+            {/* <User className="w-8 h-8 text-[#0342AF] mr-2" /> */}
+            {/* <h1 className="text-3xl font-bold">Profil</h1> */}
           </div>
         </div>
 
