@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Trophy, Home, LogOut, User, PlayCircle, Menu, X } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../supabase';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Trophy, Home, LogOut, User, PlayCircle, Menu, X } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { supabase } from "../supabase";
 
 export default function Navbar() {
   const { session } = useAuth();
@@ -11,7 +11,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/login');
+    navigate("/login");
     setIsMenuOpen(false);
   };
 
@@ -21,7 +21,9 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Trophy className="h-8 w-8 text-[#0342AF]" />
-            <span className="ml-2 text-xl font-bold hidden sm:block">Axxone Coinche</span>
+            <span className="ml-2 text-xl font-bold hidden sm:block">
+              Axxone Coinche
+            </span>
           </div>
 
           {/* Mobile menu button */}
@@ -30,7 +32,11 @@ export default function Navbar() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-gray-700 hover:text-[#0342AF]"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
 
@@ -69,6 +75,13 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                <Link
+                  to="/"
+                  className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                >
+                  <Home className="h-5 w-5 mr-1" />
+                  Accueil
+                </Link>
                 <Link
                   to="/login"
                   className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
