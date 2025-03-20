@@ -59,7 +59,7 @@ export default function Profile() {
             .select("trigramme")
             .eq("id", session.user.id)
             .single();
-          
+
           if (userProfileError) throw userProfileError;
           targetTrigramme = userProfile.trigramme;
           navigate(`/profile/${targetTrigramme}`);
@@ -100,42 +100,68 @@ export default function Profile() {
 
         if (playersError) throw playersError;
 
-        const playerMap = Object.fromEntries(players.map((p) => [p.id, p.trigramme]));
+        const playerMap = Object.fromEntries(
+          players.map((p) => [p.id, p.trigramme])
+        );
         setPlayersMap(playerMap);
 
         setProfile(profileData);
         setGameHistory(games);
 
-        const playerStats: Record<string, { winsWith: number; lossesWith: number; winsAgainst: number; lossesAgainst: number }> = {};
+        const playerStats: Record<
+          string,
+          {
+            winsWith: number;
+            lossesWith: number;
+            winsAgainst: number;
+            lossesAgainst: number;
+          }
+        > = {};
 
         // Calculer les stats de chaque joueur
         games.forEach((game) => {
-          const isWinner = game.winning_team_player1_id === profileData.id || game.winning_team_player2_id === profileData.id;
-          const isLoser = game.losing_team_player1_id === profileData.id || game.losing_team_player2_id === profileData.id;
-        
+          const isWinner =
+            game.winning_team_player1_id === profileData.id ||
+            game.winning_team_player2_id === profileData.id;
+          const isLoser =
+            game.losing_team_player1_id === profileData.id ||
+            game.losing_team_player2_id === profileData.id;
+
           const teammates = isWinner
             ? [game.winning_team_player1_id, game.winning_team_player2_id]
             : [game.losing_team_player1_id, game.losing_team_player2_id];
-        
+
           const opponents = isWinner
             ? [game.losing_team_player1_id, game.losing_team_player2_id]
             : [game.winning_team_player1_id, game.winning_team_player2_id];
-        
+
           teammates.forEach((mate) => {
             if (mate === profileData.id) return;
-            if (!playerStats[mate]) playerStats[mate] = { winsWith: 0, lossesWith: 0, winsAgainst: 0, lossesAgainst: 0 };
-        
+            if (!playerStats[mate])
+              playerStats[mate] = {
+                winsWith: 0,
+                lossesWith: 0,
+                winsAgainst: 0,
+                lossesAgainst: 0,
+              };
+
             if (isWinner) {
               playerStats[mate].winsWith += 1; // Victoire avec ce joueur
             } else {
               playerStats[mate].lossesWith += 1; // Défaite avec ce joueur
             }
           });
-        
+
           opponents.forEach((opponent) => {
             if (opponent === profileData.id) return;
-            if (!playerStats[opponent]) playerStats[opponent] = { winsWith: 0, lossesWith: 0, winsAgainst: 0, lossesAgainst: 0 };
-        
+            if (!playerStats[opponent])
+              playerStats[opponent] = {
+                winsWith: 0,
+                lossesWith: 0,
+                winsAgainst: 0,
+                lossesAgainst: 0,
+              };
+
             if (isLoser) {
               playerStats[opponent].winsAgainst += 1; // L'adversaire a gagné contre nous
             } else {
@@ -143,30 +169,40 @@ export default function Profile() {
             }
           });
         });
-        
+
         // Trouver le meilleur allié
-        const bestAllyId = Object.keys(playerStats).reduce((best, playerId) => 
-          playerStats[playerId].winsWith > (playerStats[best]?.winsWith || 0) ? playerId : best,
+        const bestAllyId = Object.keys(playerStats).reduce(
+          (best, playerId) =>
+            playerStats[playerId].winsWith > (playerStats[best]?.winsWith || 0)
+              ? playerId
+              : best,
           ""
         );
-        
+
         // Trouver le pire allié
-        const worstAllyId = Object.keys(playerStats).reduce((worst, playerId) => 
-          playerStats[playerId].lossesWith > (playerStats[worst]?.lossesWith || 0) ? playerId : worst,
+        const worstAllyId = Object.keys(playerStats).reduce(
+          (worst, playerId) =>
+            playerStats[playerId].lossesWith >
+            (playerStats[worst]?.lossesWith || 0)
+              ? playerId
+              : worst,
           ""
         );
-        
+
         // Trouver le némésis (celui contre qui on a perdu le plus)
-        const nemesisId = Object.keys(playerStats).reduce((nemesis, playerId) => 
-          playerStats[playerId].winsAgainst > (playerStats[nemesis]?.winsAgainst || 0) ? playerId : nemesis,
+        const nemesisId = Object.keys(playerStats).reduce(
+          (nemesis, playerId) =>
+            playerStats[playerId].winsAgainst >
+            (playerStats[nemesis]?.winsAgainst || 0)
+              ? playerId
+              : nemesis,
           ""
         );
-        
+
         // Affecter les valeurs avec sécurité (éviter undefined)
         setBestAlly(playerMap[bestAllyId] || "N/A");
         setWorstAlly(playerMap[worstAllyId] || "N/A");
         setNemesis(playerMap[nemesisId] || "N/A");
-        
       } catch (error: any) {
         setError(error.message);
       }
@@ -174,8 +210,6 @@ export default function Profile() {
 
     loadProfile();
   }, [trigramme, session]);
-
-
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -239,29 +273,30 @@ export default function Profile() {
 
             <div className="max-w-4xl mx-auto">
               <div className="p-6 mb-6">
-                {/* <h3 className="text-xl font-semibold mb-4 flex items-center">
-          <Shield className="w-5 h-5 mr-2 text-blue-500" />
-          Alliances & Rivalités
-        </h3> */}
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                  <div className="bg-red-50 p-4 rounded-lg text-center">
-                    <Skull className="w-6 h-6 text-red-500 mx-auto mb-2" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Nemesis */}
+                  <div className="bg-red-50 p-4 rounded-lg text-center w-full">
+                    <Skull className="w-8 h-8 text-red-500 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">Nemesis</p>
-                    <p className="text-2xl font-bold text-gray-800">
+                    <p className="text-lg font-bold text-gray-800">
                       {nemesis || "N/A"}
                     </p>
                   </div>
-                  <div className="bg-green-50 p-4 rounded-lg text-center">
-                    <Award className="w-6 h-6 text-green-500 mx-auto mb-2" />
+
+                  {/* Meilleur allié */}
+                  <div className="bg-green-50 p-4 rounded-lg text-center w-full">
+                    <Award className="w-8 h-8 text-green-500 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">Meilleur allié</p>
-                    <p className="text-2xl font-bold text-gray-800">
+                    <p className="text-lg font-bold text-gray-800">
                       {bestAlly || "N/A"}
                     </p>
                   </div>
-                  <div className="bg-yellow-50 p-4 rounded-lg text-center">
-                    <XCircle className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
+
+                  {/* Pire allié */}
+                  <div className="bg-yellow-50 p-4 rounded-lg text-center w-full">
+                    <XCircle className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">Pire allié</p>
-                    <p className="text-2xl font-bold text-gray-800">
+                    <p className="text-lg font-bold text-gray-800">
                       {worstAlly || "N/A"}
                     </p>
                   </div>
@@ -270,76 +305,86 @@ export default function Profile() {
             </div>
 
             <div className="mt-8">
-  <h3 className="text-xl font-semibold mb-4 flex items-center">
-    <Clock className="w-5 h-5 mr-2" />
-    Historique des parties
-  </h3>
-  <div className="space-y-4">
-    {gameHistory.length === 0 ? (
-      <p className="text-center text-gray-500">Aucune partie jouée</p>
-    ) : (
-      gameHistory
-        .slice(0, showAllGames ? gameHistory.length : 5) // ✅ Afficher seulement 5 parties par défaut
-        .map((game) => {
-          const isWinner =
-            game.winning_team_player1_id === profile?.id ||
-            game.winning_team_player2_id === profile?.id;
-          const isLoser =
-            game.losing_team_player1_id === profile?.id ||
-            game.losing_team_player2_id === profile?.id;
+              <h3 className="text-xl font-semibold mb-4 flex items-center">
+                <Clock className="w-5 h-5 mr-2" />
+                Historique des parties
+              </h3>
+              <div className="space-y-4">
+                {gameHistory.length === 0 ? (
+                  <p className="text-center text-gray-500">
+                    Aucune partie jouée
+                  </p>
+                ) : (
+                  gameHistory
+                    .slice(0, showAllGames ? gameHistory.length : 5) // ✅ Afficher seulement 5 parties par défaut
+                    .map((game) => {
+                      const isWinner =
+                        game.winning_team_player1_id === profile?.id ||
+                        game.winning_team_player2_id === profile?.id;
+                      const isLoser =
+                        game.losing_team_player1_id === profile?.id ||
+                        game.losing_team_player2_id === profile?.id;
 
-          return (
-            <div
-              key={game.id}
-              className={`p-4 rounded-lg ${
-                isWinner ? "bg-green-50" : isLoser ? "bg-red-50" : "bg-gray-50"
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className="font-semibold">
-                    {isWinner ? "Victoire" : isLoser ? "Défaite" : "Match neutre"}
-                  </span>
-                  <span className="text-sm text-gray-600 ml-2">
-                    {new Date(game.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="font-bold">
-                    {game.score_nous} - {game.score_eux}
-                  </span>
-                </div>
+                      return (
+                        <div
+                          key={game.id}
+                          className={`p-4 rounded-lg ${
+                            isWinner
+                              ? "bg-green-50"
+                              : isLoser
+                              ? "bg-red-50"
+                              : "bg-gray-50"
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <span className="font-semibold">
+                                {isWinner
+                                  ? "Victoire"
+                                  : isLoser
+                                  ? "Défaite"
+                                  : "Match neutre"}
+                              </span>
+                              <span className="text-sm text-gray-600 ml-2">
+                                {new Date(game.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-bold">
+                                {game.score_nous} - {game.score_eux}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-2 text-sm text-gray-600">
+                            <p>
+                              <strong>Vainqueurs:</strong>{" "}
+                              {playersMap[game.winning_team_player1_id]} &{" "}
+                              {playersMap[game.winning_team_player2_id]}
+                            </p>
+                            <p>
+                              <strong>Noobs:</strong>{" "}
+                              {playersMap[game.losing_team_player1_id]} &{" "}
+                              {playersMap[game.losing_team_player2_id]}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                )}
               </div>
-              <div className="mt-2 text-sm text-gray-600">
-                <p>
-                  <strong>Vainqueurs:</strong>{" "}
-                  {playersMap[game.winning_team_player1_id]} &{" "}
-                  {playersMap[game.winning_team_player2_id]}
-                </p>
-                <p>
-                  <strong>Noobs:</strong>{" "}
-                  {playersMap[game.losing_team_player1_id]} &{" "}
-                  {playersMap[game.losing_team_player2_id]}
-                </p>
-              </div>
+
+              {/* ✅ Bouton "Voir plus" si plus de 5 parties */}
+              {gameHistory.length > 5 && (
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() => setShowAllGames((prev) => !prev)}
+                    className="text-[#0342AF] font-medium hover:underline"
+                  >
+                    {showAllGames ? "Voir moins" : "Voir plus"}
+                  </button>
+                </div>
+              )}
             </div>
-          );
-        })
-    )}
-  </div>
-
-  {/* ✅ Bouton "Voir plus" si plus de 5 parties */}
-  {gameHistory.length > 5 && (
-    <div className="mt-4 text-center">
-      <button
-        onClick={() => setShowAllGames((prev) => !prev)}
-        className="text-[#0342AF] font-medium hover:underline"
-      >
-        {showAllGames ? "Voir moins" : "Voir plus"}
-      </button>
-    </div>
-  )}
-</div>
           </>
         )}
       </div>
