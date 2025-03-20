@@ -113,7 +113,7 @@ export default function Home() {
       {worstPlayers.length > 0 && (
         <div className="bg-white rounded-lg shadow-xl p-8">
           <h2 className="text-2xl font-bold text-center mb-8">
-            Les Joueurs en difficultés...
+            Les joueurs en difficultés...
           </h2>
           <div className="flex justify-center items-end space-x-3 sm:space-x-8 mb-8">
             {worstPlayers[1] && (
