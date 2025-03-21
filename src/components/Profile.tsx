@@ -13,6 +13,15 @@ import {
 import { supabase } from "../supabase";
 import { useAuth } from "../hooks/useAuth";
 import { useParams, useNavigate } from "react-router-dom";
+import Paysan from "../assets/icons/villager.svg";
+import Forgeron from "../assets/icons/blacksmith.svg";
+import Paysanne from "../assets/icons/paysanne.svg";
+import Bouffon from "../assets/icons/jester.svg";
+import Empereur from "../assets/icons/king.svg";
+import Bourreau from "../assets/icons/executioner.svg";
+import Roi from "../assets/icons/king.svg";
+import Garde from "../assets/icons/soldier.svg";
+import { Badge } from "../components/Badge";
 
 interface ProfileData {
   id: string;
@@ -235,6 +244,102 @@ export default function Profile() {
                 Membre depuis{" "}
                 {new Date(session?.user?.created_at || "").toLocaleDateString()}
               </p> */}
+            </div>
+
+            <div className="main-wrapper flex flex-wrap justify-center">
+              {[
+                {
+                  condition: profile?.games_played >= 1,
+                  label: "Paysan",
+                  className: "yellow",
+                  description: "Jouer 1 partie",
+                  icon: <img src={Paysan} alt="Paysan" className="w-11 h-11" />,
+                },
+                {
+                  condition: profile?.games_played >= 10,
+                  label: "Bouffon",
+                  className: "orange",
+                  description: "Jouer 10 parties",
+                  icon: (
+                    <img src={Bouffon} alt="Bouffon" className="w-11 h-11" />
+                  ),
+                },
+                {
+                  condition: profile?.games_played >= 30,
+                  label: "Garde",
+                  className: "pink",
+                  description: "Jouer 30 parties",
+                  icon: <img src={Garde} alt="Garde" className="w-11 h-11" />,
+                },
+                {
+                  condition: profile?.games_played >= 50,
+                  label: "Chevalier",
+                  color: "from-red-400 to-red-600",
+                  description: "Jouer 50 parties",
+                  icon: <img src={Paysan} alt="Paysan" className="w-11 h-11" />,
+                },
+                {
+                  condition: profile?.games_played >= 100,
+                  label: "Roi",
+                  color: "from-purple-400 to-purple-600",
+                  description: "Jouer 100 parties",
+                  icon: <img src={Roi} alt="Paysan" className="w-11 h-11" />,
+                },
+                {
+                  condition: profile?.games_won >= 1,
+                  label: "Paysanne",
+                  color: "from-teal-400 to-teal-600",
+                  description: "Gagner 1 partie",
+                  icon: (
+                    <img src={Paysanne} alt="Paysan" className="w-11 h-11" />
+                  ),
+                },
+                {
+                  condition: profile?.games_won >= 10,
+                  label: "Bourreau",
+                  className: "blue",
+                  description: "Gagner 10 parties",
+                  icon: (
+                    <img src={Bourreau} alt="Bourreau" className="w-11 h-11" />
+                  ),
+                },
+                {
+                  condition: profile?.games_won >= 30,
+                  label: "Forgeron",
+                  color: "from-indigo-600 to-indigo-800",
+                  description: "Gagner 30 parties",
+                  icon: (
+                    <img src={Forgeron} alt="Paysan" className="w-11 h-11" />
+                  ),
+                },
+                {
+                  condition: profile?.games_won >= 50,
+                  label: "Prince",
+                  color: "from-green-400 to-green-600",
+                  description: "Gagner 50 parties",
+                  icon: <img src={Garde} alt="Paysan" className="w-11 h-11" />,
+                },
+                {
+                  condition: profile?.games_won >= 100,
+                  label: "Empereur",
+                  className: "green-dark",
+                  description: "Gagner 100 parties",
+                  icon: (
+                    <img src={Empereur} alt="Empereur" className="w-11 h-11" />
+                  ),
+                },
+                // ... ajoute les autres badges ici
+              ]
+                .filter((badge) => badge.condition)
+                .map((badge, index) => (
+                  <Badge
+                    key={index}
+                    label={badge.label}
+                    className={badge.className}
+                    icon={badge.icon}
+                    description={badge.description}
+                  />
+                ))}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

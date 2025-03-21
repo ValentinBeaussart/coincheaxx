@@ -77,7 +77,7 @@ export default function Navbar() {
               <>
                 <Link
                   to="/"
-                  className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                  className="flex items-center px-2 py-4 text-gray-700 hover:text-[#0342AF]"
                 >
                   <Home className="h-5 w-5 mr-1" />
                   Accueil
