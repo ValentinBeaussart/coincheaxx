@@ -32,9 +32,9 @@
 .badge:after {
   transform: rotate(-60deg);
 }
-.badge:hover {
+/* .badge:hover {
   top: -4px;
-}
+} */
 .badge .circle {
   display: flex;
   align-items: center;
