@@ -55,7 +55,7 @@ export default function Home() {
                 <div className="w-24 h-32 bg-gray-100 rounded-t-lg flex items-center justify-center mb-4">
                   <img src={grandmaster} alt="Garde" className="w-25 h-25" />
                 </div>
-                <div className="bg-gray-100 p-4 rounded-lg">
+                <div className="bg-gray-100 p-4 rounded-lg h-24">
                   <Link
                     to={`/profile/${topPlayers[1].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
@@ -76,7 +76,7 @@ export default function Home() {
                 <div className="w-28 h-40 bg-[#0342AF]/10 rounded-t-lg flex items-center justify-center mb-4">
                   <img src={challenger} alt="Garde" className="w-25 h-25" />
                 </div>
-                <div className="bg-[#0342AF]/10 p-4 rounded-lg">
+                <div className="bg-[#0342AF]/10 p-4 rounded-lg h-24">
                   <Link
                     to={`/profile/${topPlayers[0].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
@@ -97,7 +97,7 @@ export default function Home() {
                 <div className="w-24 h-28 bg-orange-100 rounded-t-lg flex items-center justify-center mb-4">
                   <img src={master} alt="Garde" className="w-25 h-25" />
                 </div>
-                <div className="bg-orange-100 p-4 rounded-lg">
+                <div className="bg-orange-100 p-4 rounded-lg h-24">
                   <Link
                     to={`/profile/${topPlayers[2].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
@@ -127,7 +127,7 @@ export default function Home() {
                 <div className="w-24 h-32 bg-gray-100 rounded-t-lg flex items-center justify-center mb-4">
                   <img src={argent} alt="Garde" className="w-25 h-25" />
                 </div>
-                <div className="bg-gray-100 p-4 rounded-lg">
+                <div className="bg-gray-100 p-4 rounded-lg h-24">
                   <Link
                     to={`/profile/${worstPlayers[1].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
@@ -148,7 +148,7 @@ export default function Home() {
                 <div className="w-28 h-40 bg-red-100 rounded-t-lg flex items-center justify-center mb-4">
                   <img src={bronze} alt="Garde" className="w-25 h-25" />
                 </div>
-                <div className="bg-red-100 p-4 rounded-lg">
+                <div className="bg-red-100 p-4 rounded-lg h-24">
                   <Link
                     to={`/profile/${worstPlayers[0].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
@@ -169,7 +169,7 @@ export default function Home() {
                 <div className="w-24 h-28 bg-orange-100 rounded-t-lg flex items-center justify-center mb-4">
                   <img src={or} alt="Garde" className="w-25 h-25" />
                 </div>
-                <div className="bg-orange-100 p-4 rounded-lg">
+                <div className="bg-orange-100 p-4 rounded-lg h-24">
                   <Link
                     to={`/profile/${worstPlayers[2].trigramme}`}
                     className="text-blue-500 hover:underline font-bold"
