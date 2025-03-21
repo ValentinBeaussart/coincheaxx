@@ -2,6 +2,12 @@ import React, { useEffect, useState } from "react";
 import { PlayCircle, Trophy, Medal, Club, Frown } from "lucide-react";
 import { supabase } from "../supabase";
 import { Link } from "react-router-dom";
+import bronze from "../assets/icons/bronze.png";
+import argent from "../assets/icons/silver.png";
+import or from "../assets/icons/gold.png";
+import master from "../assets/icons/master.png";
+import grandmaster from "../assets/icons/grandmaster.png";
+import challenger from "../assets/icons/challenger.png";
 
 interface Player {
   trigramme: string;
@@ -47,7 +53,7 @@ export default function Home() {
             {topPlayers[1] && (
               <div className="text-center">
                 <div className="w-24 h-32 bg-gray-100 rounded-t-lg flex items-center justify-center mb-4">
-                  <Medal className="w-12 h-12 text-gray-400" />
+                  <img src={grandmaster} alt="Garde" className="w-25 h-25" />
                 </div>
                 <div className="bg-gray-100 p-4 rounded-lg">
                   <Link
@@ -68,7 +74,7 @@ export default function Home() {
             {topPlayers[0] && (
               <div className="text-center -mb-4">
                 <div className="w-28 h-40 bg-[#0342AF]/10 rounded-t-lg flex items-center justify-center mb-4">
-                  <Trophy className="w-16 h-16 text-[#0342AF]" />
+                  <img src={challenger} alt="Garde" className="w-25 h-25" />
                 </div>
                 <div className="bg-[#0342AF]/10 p-4 rounded-lg">
                   <Link
@@ -89,7 +95,7 @@ export default function Home() {
             {topPlayers[2] && (
               <div className="text-center">
                 <div className="w-24 h-28 bg-orange-100 rounded-t-lg flex items-center justify-center mb-4">
-                  <Medal className="w-10 h-10 text-orange-500" />
+                  <img src={master} alt="Garde" className="w-25 h-25" />
                 </div>
                 <div className="bg-orange-100 p-4 rounded-lg">
                   <Link
@@ -119,7 +125,7 @@ export default function Home() {
             {worstPlayers[1] && (
               <div className="text-center">
                 <div className="w-24 h-32 bg-gray-100 rounded-t-lg flex items-center justify-center mb-4">
-                  <Frown className="w-12 h-12 text-gray-400" />
+                  <img src={argent} alt="Garde" className="w-25 h-25" />
                 </div>
                 <div className="bg-gray-100 p-4 rounded-lg">
                   <Link
@@ -140,7 +146,7 @@ export default function Home() {
             {worstPlayers[0] && (
               <div className="text-center -mb-4">
                 <div className="w-28 h-40 bg-red-100 rounded-t-lg flex items-center justify-center mb-4">
-                  <Frown className="w-16 h-16 text-red-500" />
+                  <img src={bronze} alt="Garde" className="w-25 h-25" />
                 </div>
                 <div className="bg-red-100 p-4 rounded-lg">
                   <Link
@@ -161,7 +167,7 @@ export default function Home() {
             {worstPlayers[2] && (
               <div className="text-center">
                 <div className="w-24 h-28 bg-orange-100 rounded-t-lg flex items-center justify-center mb-4">
-                  <Frown className="w-10 h-10 text-orange-500" />
+                  <img src={or} alt="Garde" className="w-25 h-25" />
                 </div>
                 <div className="bg-orange-100 p-4 rounded-lg">
                   <Link
