@@ -70,7 +70,7 @@ export default function Home() {
                     {topPlayers[1].win_percentage.toFixed(1)}%
                   </p>
                   <p className="text-sm text-gray-500">
-                    {topPlayers[1].games_played} parties
+                    {topPlayers[1].games_played} PJ
                   </p>
                 </div>
               </div>
@@ -95,7 +95,7 @@ export default function Home() {
                     {topPlayers[0].win_percentage.toFixed(1)}%
                   </p>
                   <p className="text-sm text-gray-500">
-                    {topPlayers[0].games_played} parties
+                    {topPlayers[0].games_played} PJ
                   </p>
                 </div>
               </div>
@@ -120,7 +120,7 @@ export default function Home() {
                     {topPlayers[2].win_percentage.toFixed(1)}%
                   </p>
                   <p className="text-sm text-gray-500">
-                    {topPlayers[2].games_played} parties
+                    {topPlayers[2].games_played} PJ
                   </p>
                 </div>
               </div>
@@ -150,7 +150,7 @@ export default function Home() {
                     {worstPlayers[1].win_percentage.toFixed(1)}%
                   </p>
                   <p className="text-sm text-gray-500">
-                    {worstPlayers[1].games_played} parties
+                    {worstPlayers[1].games_played} PJ
                   </p>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export default function Home() {
                     {worstPlayers[0].win_percentage.toFixed(1)}%
                   </p>
                   <p className="text-sm text-gray-500">
-                    {worstPlayers[0].games_played} parties
+                    {worstPlayers[0].games_played} PJ
                   </p>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default function Home() {
                     {worstPlayers[2].win_percentage.toFixed(1)}%
                   </p>
                   <p className="text-sm text-gray-500">
-                    {worstPlayers[2].games_played} parties
+                    {worstPlayers[2].games_played} PJ
                   </p>
                 </div>
               </div>
