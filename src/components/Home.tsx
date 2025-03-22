@@ -258,14 +258,14 @@ export default function Home() {
                   {new Date(game.created_at).toLocaleDateString()}
                 </div>
                 <div className="flex items-center justify-center gap-2 text-xl font-bold text-gray-800">
-                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded shadow">
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded shadow text-center">
                     {playersMap[game.winning_team_player1_id]} &{" "}
                     {playersMap[game.winning_team_player2_id]}
                   </span>
                   <span className="text-red-600 text-sm font-black tracking-wide px-3">
                     VS
                   </span>
-                  <span className="bg-red-100 text-red-800 px-2 py-1 rounded shadow">
+                  <span className="bg-red-100 text-red-800 px-2 py-1 rounded shadow text-center">
                     {playersMap[game.losing_team_player1_id]} &{" "}
                     {playersMap[game.losing_team_player2_id]}
                   </span>
