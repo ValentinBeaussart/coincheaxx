@@ -245,9 +245,9 @@ export default function Home() {
       {/* 🔥 Dernières parties en dehors des autres blocs */}
       {recentGames.length > 0 && (
         <div className="bg-white rounded-lg shadow-xl p-8">
-          <h3 className="text-xl font-semibold text-center mb-6">
+          <h2 className="text-2xl font-bold text-center mb-8">
             Derniers combats
-          </h3>
+          </h2>
           <div className="space-y-4">
             {recentGames.map((game) => (
               <div
