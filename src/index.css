@@ -160,6 +160,7 @@
   
   .badge.is-flipped {
     transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg); /* nécessaire pour Safari */
   }
   
   .badge-content {
@@ -167,6 +168,7 @@
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden; /* nécessaire pour Safari */
     border-radius: inherit;
     display: flex;
     flex-direction: column;
