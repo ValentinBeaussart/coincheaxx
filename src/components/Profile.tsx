@@ -274,21 +274,21 @@ export default function Profile() {
                 {
                   condition: profile?.games_played >= 50,
                   label: "Chevalier",
-                  color: "from-red-400 to-red-600",
+                  className: "red",
                   description: "Jouer 50 parties",
                   icon: <img src={Paysan} alt="Paysan" className="w-11 h-11" />,
                 },
                 {
                   condition: profile?.games_played >= 100,
                   label: "Roi",
-                  color: "from-purple-400 to-purple-600",
+                  className: "purple",
                   description: "Jouer 100 parties",
                   icon: <img src={Roi} alt="Paysan" className="w-11 h-11" />,
                 },
                 {
                   condition: profile?.games_won >= 1,
                   label: "Paysanne",
-                  color: "from-teal-400 to-teal-600",
+                  className: "teal",
                   description: "Gagner 1 partie",
                   icon: (
                     <img src={Paysanne} alt="Paysan" className="w-11 h-11" />
@@ -306,7 +306,7 @@ export default function Profile() {
                 {
                   condition: profile?.games_won >= 30,
                   label: "Forgeron",
-                  color: "from-indigo-600 to-indigo-800",
+                  className: "indigo",
                   description: "Gagner 30 parties",
                   icon: (
                     <img src={Forgeron} alt="Paysan" className="w-11 h-11" />
@@ -315,7 +315,7 @@ export default function Profile() {
                 {
                   condition: profile?.games_won >= 50,
                   label: "Prince",
-                  color: "from-green-400 to-green-600",
+                  className: "green",
                   description: "Gagner 50 parties",
                   icon: <img src={Garde} alt="Paysan" className="w-11 h-11" />,
                 },
