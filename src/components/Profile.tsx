@@ -246,8 +246,8 @@ export default function Profile() {
               </p> */}
             </div>
 
-            <div className="main-wrapper flex flex-wrap justify-center">
-              {[
+            <div className="main-wrapper grid grid-cols-2 lg:grid-cols-5 gap-6 justify-center">
+            {[
                 {
                   condition: profile?.games_played >= 1,
                   label: "Paysan",
