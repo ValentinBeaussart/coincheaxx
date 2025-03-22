@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Trophy,
   Award,
@@ -6,8 +6,6 @@ import {
   XCircle,
   Percent,
   Clock,
-  User,
-  Shield,
   Skull,
 } from "lucide-react";
 import { supabase } from "../supabase";
@@ -17,10 +15,18 @@ import Paysan from "../assets/icons/villager.svg";
 import Forgeron from "../assets/icons/blacksmith.svg";
 import Paysanne from "../assets/icons/paysanne.svg";
 import Bouffon from "../assets/icons/jester.svg";
-import Empereur from "../assets/icons/king.svg";
 import Bourreau from "../assets/icons/executioner.svg";
-import Roi from "../assets/icons/king.svg";
+import Roi from "../assets/icons/roi.svg";
 import Garde from "../assets/icons/soldier.svg";
+import Chevalier from "../assets/icons/knight.svg";
+import Prince from "../assets/icons/prince.svg";
+import Napoleon from "../assets/icons/napoleon.svg";
+import Angry from "../assets/icons/angry.svg";
+import Slayer from "../assets/icons/slayer.svg";
+import Three from "../assets/icons/3.svg";
+import Five from "../assets/icons/5.svg";
+import Ten from "../assets/icons/10.svg";
+
 import { Badge } from "../components/Badge";
 
 interface ProfileData {
@@ -53,7 +59,6 @@ export default function Profile() {
   const [nemesis, setNemesis] = useState<string | null>(null);
   const [bestAlly, setBestAlly] = useState<string | null>(null);
   const [worstAlly, setWorstAlly] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [playersMap, setPlayersMap] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
   const { trigramme } = useParams<{ trigramme?: string }>();
@@ -117,21 +122,13 @@ export default function Profile() {
         setProfile(profileData);
         setGameHistory(games);
 
-        const playerStats: Record<
-          string,
-          {
-            winsWith: number;
-            lossesWith: number;
-            winsAgainst: number;
-            lossesAgainst: number;
-          }
-        > = {};
+        const playerStats: Record<string, { winsWith: number; lossesWith: number; winsAgainst: number; lossesAgainst: number }> = {};
 
-        // Calculer les stats de chaque joueur
         games.forEach((game) => {
           const isWinner =
             game.winning_team_player1_id === profileData.id ||
             game.winning_team_player2_id === profileData.id;
+
           const isLoser =
             game.losing_team_player1_id === profileData.id ||
             game.losing_team_player2_id === profileData.id;
@@ -146,40 +143,19 @@ export default function Profile() {
 
           teammates.forEach((mate) => {
             if (mate === profileData.id) return;
-            if (!playerStats[mate])
-              playerStats[mate] = {
-                winsWith: 0,
-                lossesWith: 0,
-                winsAgainst: 0,
-                lossesAgainst: 0,
-              };
-
-            if (isWinner) {
-              playerStats[mate].winsWith += 1; // Victoire avec ce joueur
-            } else {
-              playerStats[mate].lossesWith += 1; // Défaite avec ce joueur
-            }
+            if (!playerStats[mate]) playerStats[mate] = { winsWith: 0, lossesWith: 0, winsAgainst: 0, lossesAgainst: 0 };
+            if (isWinner) playerStats[mate].winsWith++;
+            else playerStats[mate].lossesWith++;
           });
 
           opponents.forEach((opponent) => {
             if (opponent === profileData.id) return;
-            if (!playerStats[opponent])
-              playerStats[opponent] = {
-                winsWith: 0,
-                lossesWith: 0,
-                winsAgainst: 0,
-                lossesAgainst: 0,
-              };
-
-            if (isLoser) {
-              playerStats[opponent].winsAgainst += 1; // L'adversaire a gagné contre nous
-            } else {
-              playerStats[opponent].lossesAgainst += 1; // L'adversaire a perdu contre nous
-            }
+            if (!playerStats[opponent]) playerStats[opponent] = { winsWith: 0, lossesWith: 0, winsAgainst: 0, lossesAgainst: 0 };
+            if (isLoser) playerStats[opponent].winsAgainst++;
+            else playerStats[opponent].lossesAgainst++;
           });
         });
 
-        // Trouver le meilleur allié
         const bestAllyId = Object.keys(playerStats).reduce(
           (best, playerId) =>
             playerStats[playerId].winsWith > (playerStats[best]?.winsWith || 0)
@@ -188,27 +164,22 @@ export default function Profile() {
           ""
         );
 
-        // Trouver le pire allié
         const worstAllyId = Object.keys(playerStats).reduce(
           (worst, playerId) =>
-            playerStats[playerId].lossesWith >
-            (playerStats[worst]?.lossesWith || 0)
+            playerStats[playerId].lossesWith > (playerStats[worst]?.lossesWith || 0)
               ? playerId
               : worst,
           ""
         );
 
-        // Trouver le némésis (celui contre qui on a perdu le plus)
         const nemesisId = Object.keys(playerStats).reduce(
           (nemesis, playerId) =>
-            playerStats[playerId].winsAgainst >
-            (playerStats[nemesis]?.winsAgainst || 0)
+            playerStats[playerId].winsAgainst > (playerStats[nemesis]?.winsAgainst || 0)
               ? playerId
               : nemesis,
           ""
         );
 
-        // Affecter les valeurs avec sécurité (éviter undefined)
         setBestAlly(playerMap[bestAllyId] || "N/A");
         setWorstAlly(playerMap[worstAllyId] || "N/A");
         setNemesis(playerMap[nemesisId] || "N/A");
@@ -219,6 +190,49 @@ export default function Profile() {
 
     loadProfile();
   }, [trigramme, session]);
+
+  const marcId = useMemo(() => {
+    return Object.entries(playersMap).find(([, trig]) => trig === "MBA")?.[0];
+  }, [playersMap]);
+
+  const winsAgainstMarc = useMemo(() => {
+    if (!profile?.id || !marcId) return 0;
+    return gameHistory.filter(
+      (game) =>
+        (game.winning_team_player1_id === profile.id ||
+          game.winning_team_player2_id === profile.id) &&
+        (game.losing_team_player1_id === marcId ||
+          game.losing_team_player2_id === marcId)
+    ).length;
+  }, [gameHistory, profile?.id, marcId]);
+
+  const consecutiveWins = useMemo(() => {
+    if (!profile?.id) return 0;
+    const today = new Date();
+    const recentGames = gameHistory.filter(
+      (game) => new Date(game.created_at).toDateString() === today.toDateString()
+    );
+    return getConsecutiveWins(profile.id, recentGames);
+  }, [gameHistory, profile?.id]);
+
+  function getConsecutiveWins(profileId: string, games: GameHistory[]): number {
+    let streak = 0;
+    for (const game of games) {
+      const isWinner =
+        game.winning_team_player1_id === profileId ||
+        game.winning_team_player2_id === profileId;
+
+      const isLoser =
+        game.losing_team_player1_id === profileId ||
+        game.losing_team_player2_id === profileId;
+
+      if (!isWinner && !isLoser) continue;
+
+      if (isWinner) streak++;
+      else break;
+    }
+    return streak;
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -246,8 +260,8 @@ export default function Profile() {
               </p> */}
             </div>
 
-            <div className="main-wrapper grid grid-cols-2 lg:grid-cols-5 gap-6 justify-center">
-            {[
+            <div className="main-wrapper grid grid-cols-2 lg:grid-cols-5 gap-6 justify-center mb-14">
+              {[
                 {
                   condition: profile?.games_played >= 1,
                   label: "Paysan",
@@ -266,24 +280,26 @@ export default function Profile() {
                 },
                 {
                   condition: profile?.games_played >= 30,
-                  label: "Garde",
-                  className: "pink",
+                  label: "Forgeron",
+                  className: "silver",
                   description: "Jouer 30 parties",
-                  icon: <img src={Garde} alt="Garde" className="w-11 h-11" />,
+                  icon: (
+                    <img src={Forgeron} alt="Forgeron" className="w-11 h-11" />
+                  ),
                 },
                 {
                   condition: profile?.games_played >= 50,
-                  label: "Chevalier",
+                  label: "Prince",
                   className: "red",
                   description: "Jouer 50 parties",
-                  icon: <img src={Paysan} alt="Paysan" className="w-11 h-11" />,
+                  icon: <img src={Prince} alt="Prince" className="w-11 h-11" />,
                 },
                 {
                   condition: profile?.games_played >= 100,
                   label: "Roi",
                   className: "purple",
                   description: "Jouer 100 parties",
-                  icon: <img src={Roi} alt="Paysan" className="w-11 h-11" />,
+                  icon: <img src={Roi} alt="Roi" className="w-11 h-11" />,
                 },
                 {
                   condition: profile?.games_won >= 1,
@@ -291,7 +307,7 @@ export default function Profile() {
                   className: "teal",
                   description: "Gagner 1 partie",
                   icon: (
-                    <img src={Paysanne} alt="Paysan" className="w-11 h-11" />
+                    <img src={Paysanne} alt="Paysanne" className="w-11 h-11" />
                   ),
                 },
                 {
@@ -305,30 +321,68 @@ export default function Profile() {
                 },
                 {
                   condition: profile?.games_won >= 30,
-                  label: "Forgeron",
-                  className: "indigo",
+                  label: "Garde",
+                  className: "pink",
                   description: "Gagner 30 parties",
-                  icon: (
-                    <img src={Forgeron} alt="Paysan" className="w-11 h-11" />
-                  ),
+                  icon: <img src={Garde} alt="Garde" className="w-11 h-11" />,
                 },
                 {
                   condition: profile?.games_won >= 50,
-                  label: "Prince",
+                  label: "Chevalier",
                   className: "green",
                   description: "Gagner 50 parties",
-                  icon: <img src={Garde} alt="Paysan" className="w-11 h-11" />,
+                  icon: (
+                    <img
+                      src={Chevalier}
+                      alt="Chevalier"
+                      className="w-11 h-11"
+                    />
+                  ),
                 },
                 {
                   condition: profile?.games_won >= 100,
-                  label: "Empereur",
-                  className: "green-dark",
+                  label: "Napoléon",
+                  className: "blue-dark",
                   description: "Gagner 100 parties",
                   icon: (
-                    <img src={Empereur} alt="Empereur" className="w-11 h-11" />
+                    <img src={Napoleon} alt="Napoléon" className="w-11 h-11" />
                   ),
                 },
-                // ... ajoute les autres badges ici
+                {
+                  condition: winsAgainstMarc >= 1,
+                  label: "Marc Bad Mood",
+                  className: "green-dark",
+                  description: "Vaincre Marc 1 fois",
+                  icon: <img src={Angry} alt="Angry" className="w-11 h-11" />,
+                },
+                {
+                  condition: winsAgainstMarc >= 20,
+                  label: "Marc Slayer",
+                  className: "berry",
+                  description: "Vaincre Marc 20 fois",
+                  icon: <img src={Slayer} alt="Slayer" className="w-11 h-11" />,
+                },
+                {
+                  condition: consecutiveWins >= 3,
+                  label: "Multi Kill",
+                  className: "night",
+                  description: "3 victoires consécutives",
+                  icon: <img src={Three} alt="Three" className="w-11 h-11" />,
+                },
+                {
+                  condition: consecutiveWins >= 5,
+                  label: "Ultra Kill",
+                  className: "sunset",
+                  description: "5 victoires consécutives",
+                  icon: <img src={Five} alt="Five" className="w-11 h-11" />,
+                },
+                {
+                  condition: consecutiveWins >= 10,
+                  label: "Holy Shit",
+                  className: "gold",
+                  description: "10 victoires consécutives",
+                  icon: <img src={Ten} alt="Ten" className="w-11 h-11" />,
+                },
               ]
                 .filter((badge) => badge.condition)
                 .map((badge, index) => (

@@ -83,6 +83,11 @@
   z-index: 10;
 }
 
+.main-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .ribbon {
   display: flex;
   align-items: center;
@@ -111,6 +116,21 @@
 .orange {
   background: linear-gradient(to bottom right, #ffc107 0%, #f57c00 100%);
   color: #f68401;
+}
+
+.berry {
+  background: linear-gradient(to bottom right, #c94bdf 0%, #8e24aa 100%);
+  color: #ad1fa4;
+}
+
+.sunset {
+  background: linear-gradient(to bottom right, #ff9966 0%, #ff5e62 100%);
+  color: #e64a19;
+}
+
+.night {
+  background: linear-gradient(to bottom right, #141e30 0%, #243b55 100%);
+  color: #90caf9;
 }
 
 .pink {
