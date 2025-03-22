@@ -16,17 +16,20 @@ export const Badge: React.FC<BadgeProps> = ({
   const [flipped, setFlipped] = useState(false);
 
   return (
-    <div className={`badge-wrapper`} onClick={() => setFlipped(!flipped)}>
-      <div className={`badge ${className} ${flipped ? "is-flipped" : ""}`}>
-        <div className="badge-content front">
-          <div className="circle">{icon}</div>
-          <div className="ribbon">{label}</div>
-        </div>
-        <div className="badge-content back">
-          <div className="circle text-[10px] leading-tight px-2 text-center">
-            {description}
+    <div className="badge-wrapper" onClick={() => setFlipped(!flipped)}>
+      <div className={`badge ${flipped ? "is-flipped" : ""}`}>
+        <div className="badge-face badge-front">
+          <div className={`badge-shape ${className}`}>
+            <div className="circle">{icon}</div>
+            <div className="ribbon">{label}</div>
           </div>
-          {/* <div className="ribbon">?</div> */}
+        </div>
+        <div className="badge-face badge-back">
+          <div className={`badge-shape ${className}`}>
+            <div className="circle text-[10px] text-center px-2 leading-tight text-black bg-white">
+              {description}
+            </div>
+          </div>
         </div>
       </div>
     </div>
