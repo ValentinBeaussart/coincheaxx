@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { supabase } from '../supabase';
-import { Trophy } from 'lucide-react';
-
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "../supabase";
+import Logo from "../assets/icons/ace.svg";
+  
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
@@ -32,11 +32,15 @@ export default function Login() {
     <div className="min-h-[calc(100vh-4rem)] bg-[#0342AF]/10 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-6 sm:p-8">
         <div className="flex items-center justify-center mb-8">
-          <Trophy className="w-8 h-8 text-[#0342AF] mr-2" />
-          <h1 className="text-2xl sm:text-3xl font-bold text-center">Axxone Coinche</h1>
+          <img src={Logo} alt="Logo" className="w-11 h-11" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-center">
+            Axxone Coinche
+          </h1>
         </div>
 
-        <h2 className="text-xl sm:text-2xl font-semibold text-center mb-8">Connexion</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold text-center mb-8">
+          Connexion
+        </h2>
 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -46,7 +50,9 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
             <input
               type="email"
               value={email}
@@ -57,7 +63,9 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Mot de passe
+            </label>
             <input
               type="password"
               value={password}
@@ -72,13 +80,16 @@ export default function Login() {
             disabled={loading}
             className="w-full bg-[#0342AF] text-white py-2 px-4 rounded-md hover:bg-[#0342AF]/90 focus:outline-none focus:ring-2 focus:ring-[#0342AF] focus:ring-offset-2 disabled:opacity-50"
           >
-            {loading ? 'Connexion...' : 'Se connecter'}
+            {loading ? "Connexion..." : "Se connecter"}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-600">
-          Pas encore de compte ?{' '}
-          <Link to="/register" className="text-[#0342AF] hover:text-[#0342AF]/80">
+          Pas encore de compte ?{" "}
+          <Link
+            to="/register"
+            className="text-[#0342AF] hover:text-[#0342AF]/80"
+          >
             S'inscrire
           </Link>
         </p>

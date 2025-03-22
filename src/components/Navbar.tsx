@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Trophy, Home, LogOut, User, PlayCircle, Menu, X } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../supabase";
+import Logo from "../assets/icons/ace.svg";
 
 export default function Navbar() {
   const { session } = useAuth();
@@ -20,7 +21,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Trophy className="h-8 w-8 text-[#0342AF]" />
+            <img src={Logo} alt="Logo" className="w-11 h-11" />
             <span className="ml-2 text-xl font-bold hidden sm:block">
               Axxone Coinche
             </span>
