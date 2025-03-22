@@ -15,9 +15,22 @@ interface Player {
   games_played: number;
 }
 
+interface Game {
+  id: string;
+  created_at: string;
+  score_nous: number;
+  score_eux: number;
+  winning_team_player1_id: string;
+  winning_team_player2_id: string;
+  losing_team_player1_id: string;
+  losing_team_player2_id: string;
+}
+
 export default function Home() {
   const [topPlayers, setTopPlayers] = useState<Player[]>([]);
   const [worstPlayers, setWorstPlayers] = useState<Player[]>([]);
+  const [recentGames, setRecentGames] = useState<Game[]>([]);
+  const [playersMap, setPlayersMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     async function fetchPlayers() {
@@ -33,15 +46,43 @@ export default function Home() {
         const topFiltered = sortedPlayers.slice(0, 3);
         const worstFiltered = sortedPlayers
           .filter((player) => !topFiltered.includes(player))
+          .sort((a, b) => a.win_percentage - b.win_percentage)
           .slice(0, 3);
-        worstFiltered.sort((a, b) => a.win_percentage - b.win_percentage);
 
         setTopPlayers(topFiltered);
         setWorstPlayers(worstFiltered);
       }
     }
 
+    async function fetchRecentGames() {
+      const { data: games } = await supabase
+        .from("games")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (games) {
+        const playerIds = new Set<string>();
+        games.forEach((game) => {
+          playerIds.add(game.winning_team_player1_id);
+          playerIds.add(game.winning_team_player2_id);
+          playerIds.add(game.losing_team_player1_id);
+          playerIds.add(game.losing_team_player2_id);
+        });
+
+        const { data: players } = await supabase
+          .from("profiles")
+          .select("id, trigramme")
+          .in("id", Array.from(playerIds));
+
+        const map = Object.fromEntries(players.map((p) => [p.id, p.trigramme]));
+        setPlayersMap(map);
+        setRecentGames(games);
+      }
+    }
+
     fetchPlayers();
+    fetchRecentGames();
   }, []);
 
   return (
@@ -137,7 +178,7 @@ export default function Home() {
             {worstPlayers[1] && (
               <div className="text-center">
                 <div className="w-24 h-32 bg-gray-100 rounded-t-lg flex items-center justify-center mb-4">
-                  <img src={argent} alt="Garde" className="w-25 h-25" />
+                  <img src={argent} alt="2e" className="w-25 h-25" />
                 </div>
                 <div className="bg-gray-100 p-4 rounded-lg">
                   <Link
@@ -158,7 +199,7 @@ export default function Home() {
             {worstPlayers[0] && (
               <div className="text-center -mb-4">
                 <div className="w-28 h-40 bg-red-100 rounded-t-lg flex items-center justify-center mb-4">
-                  <img src={bronze} alt="Garde" className="w-25 h-25" />
+                  <img src={bronze} alt="1er" className="w-25 h-25" />
                 </div>
                 <div className="bg-red-100 p-4 rounded-lg">
                   <Link
@@ -179,7 +220,7 @@ export default function Home() {
             {worstPlayers[2] && (
               <div className="text-center">
                 <div className="w-24 h-28 bg-orange-100 rounded-t-lg flex items-center justify-center mb-4">
-                  <img src={or} alt="Garde" className="w-25 h-25" />
+                  <img src={or} alt="3e" className="w-25 h-25" />
                 </div>
                 <div className="bg-orange-100 p-4 rounded-lg">
                   <Link
@@ -197,6 +238,43 @@ export default function Home() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 🔥 Dernières parties en dehors des autres blocs */}
+      {recentGames.length > 0 && (
+        <div className="bg-white rounded-lg shadow-xl p-8">
+          <h3 className="text-xl font-semibold text-center mb-6">
+            Derniers combats
+          </h3>
+          <div className="space-y-4">
+            {recentGames.map((game) => (
+              <div
+                key={game.id}
+                className="bg-gray-100 border border-gray-300 p-4 rounded-xl shadow-sm text-sm flex flex-col gap-3"
+              >
+                <div className="text-center text-xs text-gray-500">
+                  {new Date(game.created_at).toLocaleDateString()}
+                </div>
+                <div className="flex items-center justify-center gap-2 text-xl font-bold text-gray-800">
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded shadow">
+                    {playersMap[game.winning_team_player1_id]} &{" "}
+                    {playersMap[game.winning_team_player2_id]}
+                  </span>
+                  <span className="text-red-600 text-sm font-black tracking-wide px-3">
+                    VS
+                  </span>
+                  <span className="bg-red-100 text-red-800 px-2 py-1 rounded shadow">
+                    {playersMap[game.losing_team_player1_id]} &{" "}
+                    {playersMap[game.losing_team_player2_id]}
+                  </span>
+                </div>
+                <div className="text-center text-sm font-medium text-gray-700 mt-2">
+                  Score final : {game.score_nous} - {game.score_eux}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
