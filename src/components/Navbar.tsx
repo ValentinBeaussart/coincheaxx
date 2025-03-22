@@ -1,6 +1,15 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Trophy, Home, LogOut, User, PlayCircle, Menu, X, Users } from "lucide-react";
+import {
+  Trophy,
+  Home,
+  LogOut,
+  User,
+  PlayCircle,
+  Menu,
+  X,
+  Users,
+} from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../supabase";
 import Logo from "../assets/icons/ace.svg";
@@ -64,7 +73,7 @@ export default function Navbar() {
                   className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
                 >
                   <Users className="h-5 w-5 mr-1" />
-                  Les joueurs
+                  Les Coincheurs
                 </Link>
                 <Link
                   to="/profile"
@@ -89,6 +98,13 @@ export default function Navbar() {
                 >
                   <Home className="h-5 w-5 mr-1" />
                   Accueil
+                </Link>
+                <Link
+                  to="/joueurs"
+                  className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                >
+                  <Users className="h-5 w-5 mr-1" />
+                  Les Coincheurs
                 </Link>
                 <Link
                   to="/login"
@@ -135,6 +151,13 @@ export default function Navbar() {
                   </div>
                 </Link>
                 <Link
+                  to="/joueurs"
+                  className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                >
+                  <Users className="h-5 w-5 mr-1" />
+                  Les Coincheurs
+                </Link>
+                <Link
                   to="/profile"
                   className="block px-3 py-2 text-gray-700 hover:text-[#0342AF]"
                   onClick={() => setIsMenuOpen(false)}
@@ -163,6 +186,13 @@ export default function Navbar() {
                 >
                   <Home className="h-5 w-5 mr-1" />
                   Accueil
+                </Link>
+                <Link
+                  to="/joueurs"
+                  className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                >
+                  <Users className="h-5 w-5 mr-1" />
+                  Les Coincheurs
                 </Link>
                 <Link
                   to="/login"
