@@ -40,7 +40,7 @@ export default function AdminGameEditor() {
     losing_team_player2_id: "",
   });
   const isAdmin = true;
-  //   const isAdmin = session?.user && ["VBE", "MBA"].includes(session.user.user_metadata.trigramme);
+    const isAdmin = session?.user && ["valentin.beaussart@gmail.com", "marc-etienne.barrut@axxone.fr"].includes(session.user.user_metadata.trigramme);
 
   useEffect(() => {
     fetchGames();
