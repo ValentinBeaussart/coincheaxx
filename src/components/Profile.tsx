@@ -26,6 +26,7 @@ import Slayer from "../assets/icons/slayer.svg";
 import Three from "../assets/icons/3.svg";
 import Five from "../assets/icons/5.svg";
 import Ten from "../assets/icons/10.svg";
+import Nap from "../assets/icons/napnap.jpg";
 
 import { Badge } from "../components/Badge";
 
@@ -205,7 +206,6 @@ export default function Profile() {
           game.losing_team_player2_id === marcId)
     ).length;
   }, [gameHistory, profile?.id, marcId]);
-
   const consecutiveWins = useMemo(() => {
     if (!profile?.id) return 0;
     const today = new Date();
@@ -214,6 +214,21 @@ export default function Profile() {
     );
     return getConsecutiveWins(profile.id, recentGames);
   }, [gameHistory, profile?.id]);
+
+  const sadVBE = useMemo(() => {
+    if (!profile?.id || !playersMap) return false;
+  
+    const vbeId = Object.entries(playersMap).find(([, trig]) => trig === "VBE")?.[0];
+    if (!vbeId) return false;
+  
+    return gameHistory.some((game) => {
+      const isVbeLoser = [game.losing_team_player1_id, game.losing_team_player2_id].includes(vbeId);
+      const isPlayerWinner = [game.winning_team_player1_id, game.winning_team_player2_id].includes(profile.id);
+      const isJune18 = new Date(game.created_at).getMonth() === 5 && new Date(game.created_at).getDate() === 18;
+  
+      return isVbeLoser && isPlayerWinner && isJune18;
+    });
+  }, [gameHistory, profile?.id, playersMap]);  
 
   function getConsecutiveWins(profileId: string, games: GameHistory[]): number {
     let streak = 0;
@@ -383,6 +398,14 @@ export default function Profile() {
                   description: "10 victoires consécutives",
                   icon: <img src={Ten} alt="Ten" className="w-11 h-11" />,
                 },
+                {
+                  condition: sadVBE,
+                  label: "Sad VBE",
+                  className: "gray-dark",
+                  description: "Vaincre NapNap un 18 juin...",
+                  icon: <img src={Nap} alt="Nap" className="w-11 h-11 rounded-full" />,
+                },
+
               ]
                 .filter((badge) => badge.condition)
                 .map((badge, index) => (

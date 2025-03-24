@@ -2,6 +2,8 @@ import React from "react";
 import { BlueHelmet, RedHelmet } from "./TeamIcons";
 import { GameState, Player } from "./types";
 import Logo from "../../assets/icons/ace.svg";
+import { useAuth } from "../../hooks/useAuth"; // 👈 Ajouter import
+import Garde from "../../assets/icons/garde-imperial.webp";
 
 interface GameSetupProps {
   gameState: GameState;
@@ -15,6 +17,7 @@ interface GameSetupProps {
   areAllPlayersSelected: () => boolean;
 }
 
+
 export default function GameSetup({
   gameState,
   availablePlayers,
@@ -23,6 +26,21 @@ export default function GameSetup({
   isPlayerSelected,
   areAllPlayersSelected,
 }: GameSetupProps) {
+  const { session } = useAuth(); // 👈 Hook d'auth
+
+  const isAuthorized =
+    session?.user?.email === "valentin.beaussart@gmail.com"; // 👈 Vérifie l'email
+
+  if (!isAuthorized) {
+    return (
+      <div className="text-center py-10 text-red-600 font-semibold">
+        Accès refusé - Cette page est réservée à Napoléon
+        <div className="mt-4 justify-center flex items-center">
+          <img src={Garde} alt="Garde" className="w-50 h-50" />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="max-w-4xl mx-auto px-4">
       <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6">

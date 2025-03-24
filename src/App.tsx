@@ -13,6 +13,7 @@ import Profile from "./components/Profile";
 import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import AllPlayers from "./components/AllPlayers";
+import Admin from "./components/Admin";
 
 function App() {
   const { session } = useAuth();
@@ -34,6 +35,7 @@ function App() {
               element={session ? <Profile /> : <Navigate to="/login" replace />}
             />
             <Route path="/joueurs" element={<AllPlayers />} />
+            <Route path="/admin" element={<Admin />} />
             <Route
               path="/login"
               element={!session ? <Login /> : <Navigate to="/" replace />}
