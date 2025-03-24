@@ -42,7 +42,7 @@ export default function AdminGameEditor() {
   const isAdmin =
     session?.user &&
     ["valentin.beaussart@gmail.com", "marc-etienne.barrut@axxone.fr"].includes(
-      session.user.user_metadata.trigramme
+      session.user.user_metadata.email
     );
 
   useEffect(() => {
