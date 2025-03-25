@@ -157,33 +157,59 @@ export default function Profile() {
           });
         });
 
-        const bestAllyId = Object.keys(playerStats).reduce(
-          (best, playerId) =>
-            playerStats[playerId].winsWith > (playerStats[best]?.winsWith || 0)
-              ? playerId
-              : best,
-          ""
-        );
+        function getBestAlly(stats: typeof playerStats) {
+          let bestId = "";
+          let bestRatio = -1;
+        
+          for (const [id, stat] of Object.entries(stats)) {
+            const total = stat.winsWith + stat.lossesWith;
+            if (total >= 3) {
+              const ratio = stat.winsWith / total;
+              if (ratio > bestRatio) {
+                bestRatio = ratio;
+                bestId = id;
+              }
+            }
+          }
+        
+          return bestId;
+        }
+        
+        function getWorstAlly(stats: typeof playerStats) {
+          let worstId = "";
+          let worstRatio = Infinity;
+        
+          for (const [id, stat] of Object.entries(stats)) {
+            const total = stat.winsWith + stat.lossesWith;
+            if (total >= 3) {
+              const ratio = stat.winsWith / total;
+              if (ratio < worstRatio) {
+                worstRatio = ratio;
+                worstId = id;
+              }
+            }
+          }
+        
+          return worstId;
+        }
+        
+        function getNemesis(stats: typeof playerStats) {
+          let nemesisId = "";
+          let maxLosses = 0;
+        
+          for (const [id, stat] of Object.entries(stats)) {
+            if (stat.lossesAgainst > maxLosses) {
+              maxLosses = stat.lossesAgainst;
+              nemesisId = id;
+            }
+          }
+        
+          return nemesisId;
+        }
 
-        const worstAllyId = Object.keys(playerStats).reduce(
-          (worst, playerId) =>
-            playerStats[playerId].lossesWith > (playerStats[worst]?.lossesWith || 0)
-              ? playerId
-              : worst,
-          ""
-        );
-
-        const nemesisId = Object.keys(playerStats).reduce(
-          (nemesis, playerId) =>
-            playerStats[playerId].winsAgainst > (playerStats[nemesis]?.winsAgainst || 0)
-              ? playerId
-              : nemesis,
-          ""
-        );
-
-        setBestAlly(playerMap[bestAllyId] || "N/A");
-        setWorstAlly(playerMap[worstAllyId] || "N/A");
-        setNemesis(playerMap[nemesisId] || "N/A");
+        setBestAlly(playerMap[getBestAlly(playerStats)] || "N/A");
+        setWorstAlly(playerMap[getWorstAlly(playerStats)] || "N/A");
+        setNemesis(playerMap[getNemesis(playerStats)] || "N/A");        
       } catch (error: any) {
         setError(error.message);
       }
