@@ -32,7 +32,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <img src={Logo} alt="Logo" className="w-11 h-11" />
             <span className="ml-2 text-xl font-bold hidden sm:block">
-              Axxone Coinche
+              AxeoCOINCHE
             </span>
           </div>
 

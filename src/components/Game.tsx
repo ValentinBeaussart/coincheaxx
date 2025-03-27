@@ -550,7 +550,7 @@ export default function Game() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div className="flex items-center">
             <img src={Logo} alt="Logo" className="w-11 h-11" />
-            <h1 className="text-2xl sm:text-3xl font-bold">Axxone Coinche</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">AxeoCOINCHE</h1>
           </div>
           <button
             onClick={() => setIsEndGameModalOpen(true)}

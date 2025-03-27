@@ -34,7 +34,7 @@ export default function Login() {
         <div className="flex items-center justify-center mb-8">
           <img src={Logo} alt="Logo" className="w-11 h-11" />
           <h1 className="text-2xl sm:text-3xl font-bold text-center">
-            Axxone Coinche
+            AxeoCOINCHE
           </h1>
         </div>
 
