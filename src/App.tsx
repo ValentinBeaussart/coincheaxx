@@ -14,6 +14,7 @@ import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import AllPlayers from "./components/AllPlayers";
 import Admin from "./components/Admin";
+import Compare from "./components/Compare";
 
 function App() {
   const { session } = useAuth();
@@ -36,6 +37,10 @@ function App() {
             />
             <Route path="/joueurs" element={<AllPlayers />} />
             <Route path="/admin" element={<Admin />} />
+            <Route
+              path="/stats"
+              element={<Compare />}
+            />
             <Route
               path="/login"
               element={!session ? <Login /> : <Navigate to="/" replace />}
