@@ -11,6 +11,7 @@ import {
 import { supabase } from "../supabase";
 import { useAuth } from "../hooks/useAuth";
 import { useParams, useNavigate } from "react-router-dom";
+import UltimateBadge from "./UltimateBadge";
 import Paysan from "../assets/icons/villager.svg";
 import Forgeron from "../assets/icons/blacksmith.svg";
 import Paysanne from "../assets/icons/paysanne.svg";
@@ -23,9 +24,10 @@ import Prince from "../assets/icons/prince.svg";
 import Napoleon from "../assets/icons/napoleon.svg";
 import Angry from "../assets/icons/angry.svg";
 import Slayer from "../assets/icons/slayer.svg";
-import Three from "../assets/icons/3.svg";
-import Five from "../assets/icons/5.svg";
-import Ten from "../assets/icons/10.svg";
+import Two from "../assets/icons/2kills.png";
+import Three from "../assets/icons/3kills.png";
+import Five from "../assets/icons/5kills.png";
+import Ten from "../assets/icons/10kills.png";
 import Nap from "../assets/icons/napnap.jpg";
 
 import { Badge } from "../components/Badge";
@@ -124,7 +126,15 @@ export default function Profile() {
         setProfile(profileData);
         setGameHistory(games);
 
-        const playerStats: Record<string, { winsWith: number; lossesWith: number; winsAgainst: number; lossesAgainst: number }> = {};
+        const playerStats: Record<
+          string,
+          {
+            winsWith: number;
+            lossesWith: number;
+            winsAgainst: number;
+            lossesAgainst: number;
+          }
+        > = {};
 
         games.forEach((game) => {
           const isWinner =
@@ -145,14 +155,26 @@ export default function Profile() {
 
           teammates.forEach((mate) => {
             if (mate === profileData.id) return;
-            if (!playerStats[mate]) playerStats[mate] = { winsWith: 0, lossesWith: 0, winsAgainst: 0, lossesAgainst: 0 };
+            if (!playerStats[mate])
+              playerStats[mate] = {
+                winsWith: 0,
+                lossesWith: 0,
+                winsAgainst: 0,
+                lossesAgainst: 0,
+              };
             if (isWinner) playerStats[mate].winsWith++;
             else playerStats[mate].lossesWith++;
           });
 
           opponents.forEach((opponent) => {
             if (opponent === profileData.id) return;
-            if (!playerStats[opponent]) playerStats[opponent] = { winsWith: 0, lossesWith: 0, winsAgainst: 0, lossesAgainst: 0 };
+            if (!playerStats[opponent])
+              playerStats[opponent] = {
+                winsWith: 0,
+                lossesWith: 0,
+                winsAgainst: 0,
+                lossesAgainst: 0,
+              };
             if (isLoser) playerStats[opponent].winsAgainst++;
             else playerStats[opponent].lossesAgainst++;
           });
@@ -239,18 +261,31 @@ export default function Profile() {
     const startDate = new Date("2025-03-24");
     const filteredGames = gameHistory
       .filter((game) => new Date(game.created_at) >= startDate)
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
     return getConsecutiveWins(profile.id, filteredGames);
   }, [gameHistory, profile?.id]);
 
   const sadVBE = useMemo(() => {
     if (!profile?.id || !playersMap) return false;
-    const vbeId = Object.entries(playersMap).find(([, trig]) => trig === "VBE")?.[0];
+    const vbeId = Object.entries(playersMap).find(
+      ([, trig]) => trig === "VBE"
+    )?.[0];
     if (!vbeId) return false;
     return gameHistory.some((game) => {
-      const isVbeLoser = [game.losing_team_player1_id, game.losing_team_player2_id].includes(vbeId);
-      const isPlayerWinner = [game.winning_team_player1_id, game.winning_team_player2_id].includes(profile.id);
-      const isJune18 = new Date(game.created_at).getMonth() === 5 && new Date(game.created_at).getDate() === 18;
+      const isVbeLoser = [
+        game.losing_team_player1_id,
+        game.losing_team_player2_id,
+      ].includes(vbeId);
+      const isPlayerWinner = [
+        game.winning_team_player1_id,
+        game.winning_team_player2_id,
+      ].includes(profile.id);
+      const isJune18 =
+        new Date(game.created_at).getMonth() === 5 &&
+        new Date(game.created_at).getDate() === 18;
       return isVbeLoser && isPlayerWinner && isJune18;
     });
   }, [gameHistory, profile?.id, playersMap]);
@@ -258,8 +293,12 @@ export default function Profile() {
   function getConsecutiveWins(profileId: string, games: GameHistory[]): number {
     let streak = 0;
     for (const game of games) {
-      const isWinner = game.winning_team_player1_id === profileId || game.winning_team_player2_id === profileId;
-      const isLoser = game.losing_team_player1_id === profileId || game.losing_team_player2_id === profileId;
+      const isWinner =
+        game.winning_team_player1_id === profileId ||
+        game.winning_team_player2_id === profileId;
+      const isLoser =
+        game.losing_team_player1_id === profileId ||
+        game.losing_team_player2_id === profileId;
       if (!isWinner && !isLoser) continue;
       if (isWinner) streak++;
       else break;
@@ -268,23 +307,163 @@ export default function Profile() {
   }
 
   const badgeList = [
-    { label: "Paysan", icon: <img src={Paysan} className="w-11 h-11" />, description: "Jouer 1 partie", condition: profile?.games_played >= 1, current: profile?.games_played || 0, target: 1, className: "yellow" },
-    { label: "Bouffon", icon: <img src={Bouffon} className="w-11 h-11" />, description: "Jouer 10 parties", condition: profile?.games_played >= 10, current: profile?.games_played || 0, target: 10, className: "orange" },
-    { label: "Forgeron", icon: <img src={Forgeron} className="w-11 h-11" />, description: "Jouer 30 parties", condition: profile?.games_played >= 30, current: profile?.games_played || 0, target: 30, className: "silver" },
-    { label: "Prince", icon: <img src={Prince} className="w-11 h-11" />, description: "Jouer 50 parties", condition: profile?.games_played >= 50, current: profile?.games_played || 0, target: 50, className: "red" },
-    { label: "Roi", icon: <img src={Roi} className="w-11 h-11" />, description: "Jouer 100 parties", condition: profile?.games_played >= 100, current: profile?.games_played || 0, target: 100, className: "purple" },
-    { label: "Paysanne", icon: <img src={Paysanne} className="w-11 h-11" />, description: "Gagner 1 partie", condition: profile?.games_won >= 1, current: profile?.games_won || 0, target: 1, className: "teal" },
-    { label: "Bourreau", icon: <img src={Bourreau} className="w-11 h-11" />, description: "Gagner 10 parties", condition: profile?.games_won >= 10, current: profile?.games_won || 0, target: 10, className: "blue" },
-    { label: "Garde", icon: <img src={Garde} className="w-11 h-11" />, description: "Gagner 30 parties", condition: profile?.games_won >= 30, current: profile?.games_won || 0, target: 30, className: "pink" },
-    { label: "Chevalier", icon: <img src={Chevalier} className="w-11 h-11" />, description: "Gagner 50 parties", condition: profile?.games_won >= 50, current: profile?.games_won || 0, target: 50, className: "green" },
-    { label: "Napoléon", icon: <img src={Napoleon} className="w-11 h-11" />, description: "Gagner 100 parties", condition: profile?.games_won >= 100, current: profile?.games_won || 0, target: 100, className: "blue-dark" },
-    { label: "Marc Bad Mood", icon: <img src={Angry} className="w-11 h-11" />, description: "Vaincre Marc 1 fois", condition: winsAgainstMarc >= 1, current: winsAgainstMarc, target: 1, className: "green-dark" },
-    { label: "Marc Slayer", icon: <img src={Slayer} className="w-11 h-11" />, description: "Vaincre Marc 20 fois", condition: winsAgainstMarc >= 20, current: winsAgainstMarc, target: 20, className: "berry" },
-    { label: "Multi Kill", icon: <img src={Three} className="w-11 h-11" />, description: "3 victoires consécutives", condition: consecutiveWins >= 3, current: consecutiveWins, target: 3, className: "night" },
-    { label: "Ultra Kill", icon: <img src={Five} className="w-11 h-11" />, description: "5 victoires consécutives", condition: consecutiveWins >= 5, current: consecutiveWins, target: 5, className: "sunset" },
-    { label: "Holy Shit", icon: <img src={Ten} className="w-11 h-11" />, description: "10 victoires consécutives", condition: consecutiveWins >= 10, current: consecutiveWins, target: 10, className: "gold" },
-    { label: "Sad VBE", icon: <img src={Nap} className="w-11 h-11 rounded-full" />, description: "Vaincre NapNap un 18 juin...", condition: sadVBE, current: sadVBE ? 1 : 0, target: 1, className: "gray-dark" },
+    {
+      label: "Paysan",
+      icon: <img src={Paysan} className="w-11 h-11" />,
+      description: "Jouer 1 partie",
+      condition: profile?.games_played >= 1,
+      current: profile?.games_played || 0,
+      target: 1,
+      className: "yellow",
+    },
+    {
+      label: "Bouffon",
+      icon: <img src={Bouffon} className="w-11 h-11" />,
+      description: "Jouer 10 parties",
+      condition: profile?.games_played >= 10,
+      current: profile?.games_played || 0,
+      target: 10,
+      className: "orange",
+    },
+    {
+      label: "Forgeron",
+      icon: <img src={Forgeron} className="w-11 h-11" />,
+      description: "Jouer 30 parties",
+      condition: profile?.games_played >= 30,
+      current: profile?.games_played || 0,
+      target: 30,
+      className: "silver",
+    },
+    {
+      label: "Prince",
+      icon: <img src={Prince} className="w-11 h-11" />,
+      description: "Jouer 50 parties",
+      condition: profile?.games_played >= 50,
+      current: profile?.games_played || 0,
+      target: 50,
+      className: "red",
+    },
+    {
+      label: "Roi",
+      icon: <img src={Roi} className="w-11 h-11" />,
+      description: "Jouer 100 parties",
+      condition: profile?.games_played >= 100,
+      current: profile?.games_played || 0,
+      target: 100,
+      className: "purple",
+    },
+    {
+      label: "Paysanne",
+      icon: <img src={Paysanne} className="w-11 h-11" />,
+      description: "Gagner 1 partie",
+      condition: profile?.games_won >= 1,
+      current: profile?.games_won || 0,
+      target: 1,
+      className: "teal",
+    },
+    {
+      label: "Bourreau",
+      icon: <img src={Bourreau} className="w-11 h-11" />,
+      description: "Gagner 10 parties",
+      condition: profile?.games_won >= 10,
+      current: profile?.games_won || 0,
+      target: 10,
+      className: "blue",
+    },
+    {
+      label: "Garde",
+      icon: <img src={Garde} className="w-11 h-11" />,
+      description: "Gagner 30 parties",
+      condition: profile?.games_won >= 30,
+      current: profile?.games_won || 0,
+      target: 30,
+      className: "pink",
+    },
+    {
+      label: "Chevalier",
+      icon: <img src={Chevalier} className="w-11 h-11" />,
+      description: "Gagner 50 parties",
+      condition: profile?.games_won >= 50,
+      current: profile?.games_won || 0,
+      target: 50,
+      className: "green",
+    },
+    {
+      label: "Napoléon",
+      icon: <img src={Napoleon} className="w-11 h-11" />,
+      description: "Gagner 100 parties",
+      condition: profile?.games_won >= 100,
+      current: profile?.games_won || 0,
+      target: 100,
+      className: "blue-dark",
+    },
+    {
+      label: "Marc Bad Mood",
+      icon: <img src={Angry} className="w-11 h-11" />,
+      description: "Vaincre Marc 1 fois",
+      condition: winsAgainstMarc >= 1,
+      current: winsAgainstMarc,
+      target: 1,
+      className: "green-dark",
+    },
+    {
+      label: "Marc Slayer",
+      icon: <img src={Slayer} className="w-11 h-11" />,
+      description: "Vaincre Marc 20 fois",
+      condition: winsAgainstMarc >= 20,
+      current: winsAgainstMarc,
+      target: 20,
+      className: "berry",
+    },
+    {
+      label: "Double Kill",
+      icon: <img src={Two} className="w-11 h-11" />,
+      description: "2 victoires consécutives",
+      condition: consecutiveWins >= 2,
+      current: consecutiveWins,
+      target: 2,
+      className: "aqua-glow",
+    },
+    {
+      label: "Triple Kill",
+      icon: <img src={Three} className="w-11 h-11" />,
+      description: "3 victoires consécutives",
+      condition: consecutiveWins >= 3,
+      current: consecutiveWins,
+      target: 3,
+      className: "night",
+    },
+    {
+      label: "Penta Kill",
+      icon: <img src={Five} className="w-11 h-11" />,
+      description: "5 victoires consécutives",
+      condition: consecutiveWins >= 5,
+      current: consecutiveWins,
+      target: 5,
+      className: "sunset",
+    },
+    {
+      label: "Holy Shit",
+      icon: <img src={Ten} className="w-11 h-11" />,
+      description: "10 victoires consécutives",
+      condition: consecutiveWins >= 10,
+      current: consecutiveWins,
+      target: 10,
+      className: "gold",
+    },
+    {
+      label: "Sad VBE",
+      icon: <img src={Nap} className="w-11 h-11 rounded-full" />,
+      description: "Vaincre NapNap un 18 juin...",
+      condition: sadVBE,
+      current: sadVBE ? 1 : 0,
+      target: 1,
+      className: "gray-dark",
+    },
   ];
+
+  const hasUnlockedUltimateBadge =
+    profile?.games_played >= 100 && profile?.games_won >= 100;
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -295,29 +474,46 @@ export default function Profile() {
             {profile?.trigramme}
           </h2>
         </div>
-  
-        {/* Titre des badges */}
-        
+
+        <div className="flex justify-center mb-8">
+          <UltimateBadge unlocked={hasUnlockedUltimateBadge} />
+        </div>
+
         {/* Affichage des badges */}
-        <div className="main-wrapper grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-center mb-2">
+        <div className="main-wrapper grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-center mb-2">
           {badgeList
             .sort((a, b) => Number(!a.condition) - Number(!b.condition))
             .filter((badge) => {
               const trigramme = profile?.trigramme;
               if (!showLockedBadges && !badge.condition) return false;
-              if (badge.label === "Sad VBE" && trigramme === "VBE") return false;
-              if (["Marc Bad Mood", "Marc Slayer"].includes(badge.label) && trigramme === "MBA") return false;
+              if (badge.label === "Sad VBE" && trigramme === "VBE")
+                return false;
+              if (
+                ["Marc Bad Mood", "Marc Slayer"].includes(badge.label) &&
+                trigramme === "MBA"
+              )
+                return false;
               return true;
             })
             .map((badge, index) => {
-              const showProgress = !badge.condition && badge.current !== undefined && badge.target !== undefined;
-              const percentage = showProgress ? Math.min(100, Math.round((badge.current / badge.target) * 100)) : 0;
+              const showProgress =
+                !badge.condition &&
+                badge.current !== undefined &&
+                badge.target !== undefined;
+              const percentage = showProgress
+                ? Math.min(
+                    100,
+                    Math.round((badge.current / badge.target) * 100)
+                  )
+                : 0;
               return (
                 <div
                   key={index}
-                  className={`text-center transform transition-transform duration-200 hover:scale-105 ${
-                    badge.condition ? "" : "opacity-90"
-                  } ${badge.condition && badge.justUnlocked ? "animate-pulse" : ""}`}
+                  className={`text-center transform transition-transform duration-200 hover:scale-105 hover:opacity-100 ${
+                    badge.condition ? "" : "opacity-100"
+                  } ${
+                    badge.condition && badge.justUnlocked ? "animate-pulse" : ""
+                  }`}
                   title={badge.description}
                 >
                   <Badge
@@ -326,7 +522,11 @@ export default function Profile() {
                     icon={badge.icon}
                     description={badge.description}
                     disabled={!badge.condition}
-                    progress={showProgress ? `${badge.current}/${badge.target}` : undefined}
+                    progress={
+                      showProgress
+                        ? `${badge.current}/${badge.target}`
+                        : undefined
+                    }
                   />
                   {showProgress && (
                     <div className="mt-2 px-2">
@@ -347,10 +547,10 @@ export default function Profile() {
         </div>
 
         {/* Checkbox d'affichage améliorée */}
-        <div className="mb-10 text-center mt-6">
-          <label className="inline-flex items-center cursor-pointer">
+        <div className="mb-10 mt-6">
+          <label className="inline-flex cursor-pointer">
             <span className="mr-3 text-sm text-gray-700 font-medium">
-              Afficher les badges non débloqués
+              Voir tous les badges
             </span>
             <div className="relative">
               <input
@@ -452,12 +652,13 @@ export default function Profile() {
                   return (
                     <div
                       key={game.id}
-                      className={`p-4 rounded-lg ${isWinner
-                        ? "bg-green-50"
-                        : isLoser
+                      className={`p-4 rounded-lg ${
+                        isWinner
+                          ? "bg-green-50"
+                          : isLoser
                           ? "bg-red-50"
                           : "bg-gray-50"
-                        }`}
+                      }`}
                     >
                       <div className="flex justify-between items-center">
                         <div>
@@ -465,8 +666,8 @@ export default function Profile() {
                             {isWinner
                               ? "Victoire"
                               : isLoser
-                                ? "Défaite"
-                                : "Match neutre"}
+                              ? "Défaite"
+                              : "Match neutre"}
                           </span>
                           <span className="text-sm text-gray-600 ml-2">
                             {new Date(game.created_at).toLocaleDateString()}
@@ -508,4 +709,4 @@ export default function Profile() {
       </div>
     </div>
   );
-}  
+}

@@ -82,7 +82,7 @@ export default function AllPlayers() {
   return (
     <div className="max-w-4xl mx-auto">
     <div className="bg-white rounded-lg shadow-xl p-6 mb-6">
-      <h1 className="text-2xl font-bold text-center mb-6">Tous les joueurs</h1>
+      <h1 className="text-2xl font-bold text-center mb-6">Les Coincheurs</h1>
       <div className="space-y-4">
         {players.map((player) => (
           <div

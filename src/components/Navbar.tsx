@@ -61,13 +61,13 @@ export default function Navbar() {
                   <Home className="h-5 w-5 mr-1" />
                   Accueil
                 </Link>
-                <Link
+                {/* <Link
                   to="/game"
                   className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
                 >
                   <PlayCircle className="h-5 w-5 mr-1" />
                   Nouvelle Partie
-                </Link>
+                </Link> */}
                 <Link
                   to="/joueurs"
                   className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
@@ -140,7 +140,7 @@ export default function Navbar() {
                     Accueil
                   </div>
                 </Link>
-                <Link
+                {/* <Link
                   to="/game"
                   className="block px-3 py-2 text-gray-700 hover:text-[#0342AF]"
                   onClick={() => setIsMenuOpen(false)}
@@ -149,7 +149,7 @@ export default function Navbar() {
                     <PlayCircle className="h-5 w-5 mr-2" />
                     Nouvelle Partie
                   </div>
-                </Link>
+                </Link> */}
                 <Link
                   to="/joueurs"
                   className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"

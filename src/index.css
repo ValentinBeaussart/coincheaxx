@@ -194,3 +194,8 @@
   background: linear-gradient(to bottom right, #757575 0%, #424242 100%);
   color: #eeeeee;
 }
+
+.aqua-glow {
+  background: linear-gradient(to bottom right, #00e5ff 0%, #006064 100%);
+  color: #00bcd4;
+}

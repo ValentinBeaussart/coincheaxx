@@ -21,7 +21,7 @@ export const Badge: React.FC<BadgeProps> = ({
 
   return (
     <div
-      className={`badge-wrapper ${disabled ? "opacity-40 grayscale" : ""}`}
+      className={`badge-wrapper ${disabled ? "opacity-80 grayscale" : ""}`}
       onClick={() => setFlipped(!flipped)}
     >
       <div className={`badge ${flipped ? "is-flipped" : ""}`}>
