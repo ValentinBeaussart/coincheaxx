@@ -63,6 +63,7 @@ export default function Profile() {
   const [playersMap, setPlayersMap] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
   const { trigramme } = useParams<{ trigramme?: string }>();
+  const [showLockedBadges, setShowLockedBadges] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -301,6 +302,17 @@ const consecutiveWins = useMemo(() => {
                 {new Date(session?.user?.created_at || "").toLocaleDateString()}
               </p> */}
             </div>
+<div className="mb-4">
+  <label className="inline-flex items-center space-x-2">
+    <input
+      type="checkbox"
+      checked={showLockedBadges}
+      onChange={(e) => setShowLockedBadges(e.target.checked)}
+      className="form-checkbox"
+    />
+    <span className="text-gray-700">Afficher les badges non débloqués</span>
+  </label>
+</div>
 
             <div className="main-wrapper grid grid-cols-2 lg:grid-cols-5 gap-6 justify-center mb-14">
               {[
@@ -434,16 +446,21 @@ const consecutiveWins = useMemo(() => {
                 },
 
               ]
-                .filter((badge) => badge.condition)
-                .map((badge, index) => (
-                  <Badge
-                    key={index}
-                    label={badge.label}
-                    className={badge.className}
-                    icon={badge.icon}
-                    description={badge.description}
-                  />
-                ))}
+{allBadges
+  .filter((badge) => showLockedBadges || badge.condition)
+  .map((badge, index) => (
+    <Badge
+      key={index}
+      label={badge.label}
+      className={badge.className}
+      icon={badge.icon}
+      description={badge.description}
+      disabled={!badge.condition}
+      progress={
+        !badge.condition ? `${badge.current}/${badge.target}` : undefined
+      }
+    />
+  ))}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
