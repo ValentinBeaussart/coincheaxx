@@ -266,46 +266,46 @@ export default function ComparePage() {
       </div>
 
       {profile1 && profile2 && (
-  <div className="space-y-16">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {[profile1, profile2].map((p, idx) => (
-        <div
-          key={idx}
-          className="bg-white p-6 rounded-lg shadow-md text-center space-y-4"
-        >
-          <h2 className="text-2xl font-bold text-gray-800">
-            {p.trigramme}
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Stat
-              icon={<Target className="text-blue-500" />}
-              label="Parties jouées"
-              value={p.games_played}
-              className="bg-blue-50"
-            />
-            <Stat
-              icon={<Award className="text-green-500" />}
-              label="Victoires"
-              value={p.games_won}
-              className="bg-green-50"
-            />
-            <Stat
-              icon={<XCircle className="text-red-500" />}
-              label="Défaites"
-              value={p.games_lost}
-              className="bg-red-50"
-            />
-            <Stat
-              icon={<Percent className="text-yellow-500" />}
-              label="% Victoire"
-              value={`${p.win_percentage.toFixed(1)}%`}
-              className="bg-yellow-50"
-            />
+        <div className="space-y-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[profile1, profile2].map((p, idx) => (
+              <div
+                key={idx}
+                className="bg-white p-6 rounded-lg shadow-md text-center space-y-4"
+              >
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {p.trigramme}
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <Stat
+                    icon={<Target className="text-blue-500" />}
+                    label="Parties jouées"
+                    value={p.games_played}
+                    className="bg-blue-50"
+                  />
+                  <Stat
+                    icon={<Award className="text-green-500" />}
+                    label="Victoires"
+                    value={p.games_won}
+                    className="bg-green-50"
+                  />
+                  <Stat
+                    icon={<XCircle className="text-red-500" />}
+                    label="Défaites"
+                    value={p.games_lost}
+                    className="bg-red-50"
+                  />
+                  <Stat
+                    icon={<Percent className="text-yellow-500" />}
+                    label="% Victoire"
+                    value={`${p.win_percentage.toFixed(1)}%`}
+                    className="bg-yellow-50"
+                  />
+                </div>
+                <ScoreCard profile={p} />
+              </div>
+            ))}
           </div>
-          <ScoreCard profile={p} />
-        </div>
-      ))}
-    </div>
 
           {(duoStats || vsStats) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -353,105 +353,107 @@ export default function ComparePage() {
           )}
 
           <div className="space-y-8">
-            <h2 className="text-xl font-semibold flex items-center justify-center gap-2">
-              <BarChart2 className="text-purple-600" /> Statistiques
-              comparatives
-            </h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={[
-                  {
-                    name: "Parties jouées",
-                    [profile1.trigramme]: profile1.games_played,
-                    [profile2.trigramme]: profile2.games_played,
-                  },
-                  {
-                    name: "Victoires",
-                    [profile1.trigramme]: profile1.games_won,
-                    [profile2.trigramme]: profile2.games_won,
-                  },
-                  {
-                    name: "Défaites",
-                    [profile1.trigramme]: profile1.games_lost,
-                    [profile2.trigramme]: profile2.games_lost,
-                  },
-                  {
-                    name: "% Victoire",
-                    [profile1.trigramme]: profile1.win_percentage,
-                    [profile2.trigramme]: profile2.win_percentage,
-                  },
-                ]}
-              >
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar
-                  dataKey={profile1.trigramme}
-                  fill="#6366f1"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey={profile2.trigramme}
-                  fill="#22c55e"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+            <div className="bg-white shadow-md rounded-lg p-4 overflow-x-auto">
+              <h2 className="text-xl font-semibold flex items-center justify-center gap-2 mb-4">
+                <BarChart2 className="text-purple-600" /> Statistiques
+                comparatives
+              </h2>
 
-          <div className="space-y-8">
-            <h2 className="text-xl font-semibold flex items-center justify-center gap-2">
-              <Activity className="text-rose-600" /> Radar des performances
-            </h2>
-            <ResponsiveContainer width="100%" height={400}>
-              <RadarChart
-                outerRadius={150}
-                data={[
-                  {
-                    stat: "Jouées",
-                    [profile1.trigramme]: profile1.games_played,
-                    [profile2.trigramme]: profile2.games_played,
-                  },
-                  {
-                    stat: "Victoires",
-                    [profile1.trigramme]: profile1.games_won,
-                    [profile2.trigramme]: profile2.games_won,
-                  },
-                  {
-                    stat: "Défaites",
-                    [profile1.trigramme]: profile1.games_lost,
-                    [profile2.trigramme]: profile2.games_lost,
-                  },
-                  {
-                    stat: "% Victoires",
-                    [profile1.trigramme]: profile1.win_percentage,
-                    [profile2.trigramme]: profile2.win_percentage,
-                  },
-                ]}
-              >
-                <PolarGrid />
-                <PolarAngleAxis dataKey="stat" />
-                <PolarRadiusAxis />
-                <Radar
-                  name={profile1.trigramme}
-                  dataKey={profile1.trigramme}
-                  stroke="#6366f1"
-                  fill="#6366f1"
-                  fillOpacity={0.6}
-                />
-                <Radar
-                  name={profile2.trigramme}
-                  dataKey={profile2.trigramme}
-                  stroke="#22c55e"
-                  fill="#22c55e"
-                  fillOpacity={0.6}
-                />
-                <Tooltip />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
+              <ResponsiveContainer width="100%" height={300} minWidth={600}>
+                <BarChart
+                  data={[
+                    {
+                      name: "Parties jouées",
+                      [profile1.trigramme]: profile1.games_played,
+                      [profile2.trigramme]: profile2.games_played,
+                    },
+                    {
+                      name: "Victoires",
+                      [profile1.trigramme]: profile1.games_won,
+                      [profile2.trigramme]: profile2.games_won,
+                    },
+                    {
+                      name: "Défaites",
+                      [profile1.trigramme]: profile1.games_lost,
+                      [profile2.trigramme]: profile2.games_lost,
+                    },
+                    {
+                      name: "% Victoire",
+                      [profile1.trigramme]: profile1.win_percentage,
+                      [profile2.trigramme]: profile2.win_percentage,
+                    },
+                  ]}
+                >
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar
+                    dataKey={profile1.trigramme}
+                    fill="#6366f1"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey={profile2.trigramme}
+                    fill="#22c55e"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
 
-          {/* <SummaryTable p1={profile1} p2={profile2} /> */}
+            <div className="bg-white shadow-md rounded-lg p-4 overflow-x-auto">
+              <h2 className="text-xl font-semibold flex items-center justify-center gap-2 mb-4">
+                <Activity className="text-rose-600" /> Radar des performances
+              </h2>
+
+              <ResponsiveContainer width="100%" height={400} minWidth={600}>
+                <RadarChart
+                  outerRadius={150}
+                  data={[
+                    {
+                      stat: "Jouées",
+                      [profile1.trigramme]: profile1.games_played,
+                      [profile2.trigramme]: profile2.games_played,
+                    },
+                    {
+                      stat: "Victoires",
+                      [profile1.trigramme]: profile1.games_won,
+                      [profile2.trigramme]: profile2.games_won,
+                    },
+                    {
+                      stat: "Défaites",
+                      [profile1.trigramme]: profile1.games_lost,
+                      [profile2.trigramme]: profile2.games_lost,
+                    },
+                    {
+                      stat: "% Victoires",
+                      [profile1.trigramme]: profile1.win_percentage,
+                      [profile2.trigramme]: profile2.win_percentage,
+                    },
+                  ]}
+                >
+                  <PolarGrid />
+                  <PolarAngleAxis dataKey="stat" />
+                  <PolarRadiusAxis />
+                  <Radar
+                    name={profile1.trigramme}
+                    dataKey={profile1.trigramme}
+                    stroke="#6366f1"
+                    fill="#6366f1"
+                    fillOpacity={0.6}
+                  />
+                  <Radar
+                    name={profile2.trigramme}
+                    dataKey={profile2.trigramme}
+                    stroke="#22c55e"
+                    fill="#22c55e"
+                    fillOpacity={0.6}
+                  />
+                  <Tooltip />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
       )}
     </div>
