@@ -42,17 +42,19 @@ function Stat({
   label,
   value,
   highlight = false,
+  className = "",
 }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
   highlight?: boolean;
+  className?: string;
 }) {
   return (
     <div
       className={`p-3 rounded-md shadow-sm transition text-center ${
-        highlight ? "bg-yellow-50 border border-yellow-300" : "bg-gray-50"
-      }`}
+        highlight ? "bg-yellow-50 border border-yellow-300" : "border-gray-300"
+      } ${className}`}
     >
       <div className="flex items-center justify-center mb-1">{icon}</div>
       <p className="text-sm text-gray-500">{label}</p>
@@ -264,42 +266,46 @@ export default function ComparePage() {
       </div>
 
       {profile1 && profile2 && (
-        <div className="space-y-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[profile1, profile2].map((p, idx) => (
-              <div
-                key={idx}
-                className="bg-white p-6 rounded-lg shadow-md text-center space-y-4"
-              >
-                <h2 className="text-2xl font-bold text-gray-800">
-                  {p.trigramme}
-                </h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <Stat
-                    icon={<Target className="text-blue-500" />}
-                    label="Parties jouées"
-                    value={p.games_played}
-                  />
-                  <Stat
-                    icon={<Award className="text-green-500" />}
-                    label="Victoires"
-                    value={p.games_won}
-                  />
-                  <Stat
-                    icon={<XCircle className="text-red-500" />}
-                    label="Défaites"
-                    value={p.games_lost}
-                  />
-                  <Stat
-                    icon={<Percent className="text-yellow-500" />}
-                    label="% Victoire"
-                    value={`${p.win_percentage.toFixed(1)}%`}
-                  />
-                </div>
-                <ScoreCard profile={p} />
-              </div>
-            ))}
+  <div className="space-y-16">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {[profile1, profile2].map((p, idx) => (
+        <div
+          key={idx}
+          className="bg-white p-6 rounded-lg shadow-md text-center space-y-4"
+        >
+          <h2 className="text-2xl font-bold text-gray-800">
+            {p.trigramme}
+          </h2>
+          <div className="grid grid-cols-2 gap-4">
+            <Stat
+              icon={<Target className="text-blue-500" />}
+              label="Parties jouées"
+              value={p.games_played}
+              className="bg-blue-50"
+            />
+            <Stat
+              icon={<Award className="text-green-500" />}
+              label="Victoires"
+              value={p.games_won}
+              className="bg-green-50"
+            />
+            <Stat
+              icon={<XCircle className="text-red-500" />}
+              label="Défaites"
+              value={p.games_lost}
+              className="bg-red-50"
+            />
+            <Stat
+              icon={<Percent className="text-yellow-500" />}
+              label="% Victoire"
+              value={`${p.win_percentage.toFixed(1)}%`}
+              className="bg-yellow-50"
+            />
           </div>
+          <ScoreCard profile={p} />
+        </div>
+      ))}
+    </div>
 
           {(duoStats || vsStats) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
