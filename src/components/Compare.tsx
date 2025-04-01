@@ -1,6 +1,19 @@
+// ComparePage complet avec toutes les améliorations et logique principale intégrée
+
 import React, { useState, useEffect } from "react";
 import { supabase } from "../supabase";
-import { Award, Target, Percent, XCircle, Users, BarChart2, Activity } from "lucide-react";
+import {
+  Award,
+  Target,
+  Percent,
+  XCircle,
+  BarChart2,
+  Activity,
+  Swords,
+  Handshake,
+  PieChart,
+  Flame,
+} from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -12,7 +25,7 @@ import {
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
-  PolarRadiusAxis
+  PolarRadiusAxis,
 } from "recharts";
 
 interface ProfileData {
@@ -24,293 +37,417 @@ interface ProfileData {
   win_percentage: number;
 }
 
+function Stat({
+  icon,
+  label,
+  value,
+  highlight = false,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  highlight?: boolean;
+}) {
+  return (
+    <div
+      className={`p-3 rounded-md shadow-sm transition text-center ${
+        highlight ? "bg-yellow-50 border border-yellow-300" : "bg-gray-50"
+      }`}
+    >
+      <div className="flex items-center justify-center mb-1">{icon}</div>
+      <p className="text-sm text-gray-500">{label}</p>
+      <p className="text-lg font-bold text-gray-800">{value}</p>
+    </div>
+  );
+}
+
+function ScoreCard({ profile }: { profile: ProfileData }) {
+  const score = Math.round(
+    (profile.games_won / Math.max(1, profile.games_played)) * 100 +
+      profile.games_played / 10
+  );
+  return (
+    <Stat
+      icon={<Flame className="text-orange-500" />}
+      label="Score global"
+      value={score}
+      highlight
+    />
+  );
+}
+
+// function SummaryTable({ p1, p2 }: { p1: ProfileData; p2: ProfileData }) {
+//   return (
+//     <div className="overflow-x-auto mt-10">
+//       <table className="w-full text-sm text-left border-collapse">
+//         <thead className="bg-gray-100 text-gray-700">
+//           <tr>
+//             <th className="p-2">Statistique</th>
+//             <th className="p-2 text-center">{p1.trigramme}</th>
+//             <th className="p-2 text-center">{p2.trigramme}</th>
+//           </tr>
+//         </thead>
+//         <tbody className="text-gray-800">
+//           <tr className="border-t">
+//             <td className="p-2">Parties jouées</td>
+//             <td className="p-2 text-center">{p1.games_played}</td>
+//             <td className="p-2 text-center">{p2.games_played}</td>
+//           </tr>
+//           <tr className="border-t">
+//             <td className="p-2">Victoires</td>
+//             <td className="p-2 text-center">{p1.games_won}</td>
+//             <td className="p-2 text-center">{p2.games_won}</td>
+//           </tr>
+//           <tr className="border-t">
+//             <td className="p-2">Défaites</td>
+//             <td className="p-2 text-center">{p1.games_lost}</td>
+//             <td className="p-2 text-center">{p2.games_lost}</td>
+//           </tr>
+//           <tr className="border-t">
+//             <td className="p-2">% Victoire</td>
+//             <td className="p-2 text-center">{p1.win_percentage.toFixed(1)}%</td>
+//             <td className="p-2 text-center">{p2.win_percentage.toFixed(1)}%</td>
+//           </tr>
+//           <tr className="border-t">
+//             <td className="p-2">Score global</td>
+//             <td className="p-2 text-center">{Math.round((p1.games_won / Math.max(1, p1.games_played)) * 100 + p1.games_played / 10)}</td>
+//             <td className="p-2 text-center">{Math.round((p2.games_won / Math.max(1, p2.games_played)) * 100 + p2.games_played / 10)}</td>
+//           </tr>
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// }
+
+function AutocompleteInput({
+  value,
+  onChange,
+  options,
+  placeholder,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+  placeholder: string;
+}) {
+  return (
+    <div className="relative w-full max-w-xs">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value.toUpperCase())}
+        placeholder={placeholder}
+        className="w-full border border-gray-300 rounded-md px-4 py-2"
+        list="trigrammes"
+      />
+      <datalist id="trigrammes">
+        {options.map((opt) => (
+          <option key={opt} value={opt} />
+        ))}
+      </datalist>
+    </div>
+  );
+}
+
 export default function ComparePage() {
-    const [trigramme1, setTrigramme1] = useState("");
-    const [trigramme2, setTrigramme2] = useState("");
-    const [profile1, setProfile1] = useState<ProfileData | null>(null);
-    const [profile2, setProfile2] = useState<ProfileData | null>(null);
-    const [allTrigrammes, setAllTrigrammes] = useState<string[]>([]);
-    const [error, setError] = useState("");
-    const [duoStats, setDuoStats] = useState<{ wins: number; losses: number } | null>(null);
-    const [vsStats, setVsStats] = useState<{ wins: number; losses: number } | null>(null);
+  const [trigramme1, setTrigramme1] = useState("");
+  const [trigramme2, setTrigramme2] = useState("");
+  const [profile1, setProfile1] = useState<ProfileData | null>(null);
+  const [profile2, setProfile2] = useState<ProfileData | null>(null);
+  const [allTrigrammes, setAllTrigrammes] = useState<string[]>([]);
+  const [duoStats, setDuoStats] = useState<{
+    wins: number;
+    losses: number;
+  } | null>(null);
+  const [vsStats, setVsStats] = useState<{
+    wins: number;
+    losses: number;
+  } | null>(null);
 
   useEffect(() => {
-    async function loadTrigrammes() {
-      const { data, error } = await supabase.from("profiles").select("trigramme");
-      if (!error && data) {
-        setAllTrigrammes(data.map((p) => p.trigramme));
-      }
-    }
-    loadTrigrammes();
+    supabase
+      .from("profiles")
+      .select("trigramme")
+      .then(({ data }) => {
+        if (data) setAllTrigrammes(data.map((p) => p.trigramme));
+      });
   }, []);
 
-  async function fetchProfile(trigramme: string): Promise<ProfileData | null> {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, trigramme, games_played, games_won, games_lost, win_percentage")
-      .eq("trigramme", trigramme)
-      .single();
-    if (error) {
-      console.error(error);
-      return null;
-    }
-    return data;
-  }
-
   async function handleCompare() {
-    setError("");
-    const [p1, p2] = await Promise.all([
-      fetchProfile(trigramme1),
-      fetchProfile(trigramme2),
-    ]);
-
-    if (!p1 || !p2) {
-      setError("Impossible de charger les profils. Vérifie les trigrammes.");
-      return;
-    }
-
+    const { data: p1 } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("trigramme", trigramme1)
+      .single();
+    const { data: p2 } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("trigramme", trigramme2)
+      .single();
+    if (!p1 || !p2) return;
     setProfile1(p1);
     setProfile2(p2);
 
-    // Statistiques en duo (même équipe)
-    const { data: duoGames } = await supabase
+    const orClause = `winning_team_player1_id.eq.${p1.id},winning_team_player2_id.eq.${p1.id},losing_team_player1_id.eq.${p1.id},losing_team_player2_id.eq.${p1.id},winning_team_player1_id.eq.${p2.id},winning_team_player2_id.eq.${p2.id},losing_team_player1_id.eq.${p2.id},losing_team_player2_id.eq.${p2.id}`;
+    const { data: gamesRaw } = await supabase
       .from("games")
       .select("*")
-      .or(`and(winning_team_player1_id.eq.${p1.id},winning_team_player2_id.eq.${p2.id}),
-           and(winning_team_player1_id.eq.${p2.id},winning_team_player2_id.eq.${p1.id}),
-           and(losing_team_player1_id.eq.${p1.id},losing_team_player2_id.eq.${p2.id}),
-           and(losing_team_player1_id.eq.${p2.id},losing_team_player2_id.eq.${p1.id})`);
+      .or(orClause);
+    if (!gamesRaw) return;
 
-    if (duoGames) {
-      let wins = 0;
-      let losses = 0;
-      for (const game of duoGames) {
-        const ids = [game.winning_team_player1_id, game.winning_team_player2_id];
-        if (ids.includes(p1.id) && ids.includes(p2.id)) wins++;
-        else losses++;
-      }
-      setDuoStats({ wins, losses });
-    }
+    const duoGames = gamesRaw.filter((g) => {
+      const win = [g.winning_team_player1_id, g.winning_team_player2_id];
+      const lose = [g.losing_team_player1_id, g.losing_team_player2_id];
+      return (
+        (win.includes(p1.id) && win.includes(p2.id)) ||
+        (lose.includes(p1.id) && lose.includes(p2.id))
+      );
+    });
+    let duoWins = 0,
+      duoLosses = 0;
+    duoGames.forEach((g) => {
+      const win = [g.winning_team_player1_id, g.winning_team_player2_id];
+      if (win.includes(p1.id) && win.includes(p2.id)) duoWins++;
+      else duoLosses++;
+    });
+    setDuoStats({ wins: duoWins, losses: duoLosses });
 
-    // Statistiques l’un contre l’autre
-    const { data: vsGames } = await supabase
-      .from("games")
-      .select("*")
-      .or(`and(winning_team_player1_id.eq.${p1.id},losing_team_player1_id.eq.${p2.id}),
-           and(winning_team_player1_id.eq.${p2.id},losing_team_player1_id.eq.${p1.id}),
-           and(winning_team_player2_id.eq.${p1.id},losing_team_player2_id.eq.${p2.id}),
-           and(winning_team_player2_id.eq.${p2.id},losing_team_player2_id.eq.${p1.id})`);
-
-    if (vsGames) {
-      let p1Wins = 0;
-      let p1Losses = 0;
-      for (const game of vsGames) {
-        const isP1Winner = [game.winning_team_player1_id, game.winning_team_player2_id].includes(p1.id);
-        const isP2Loser = [game.losing_team_player1_id, game.losing_team_player2_id].includes(p2.id);
-        const isP2Winner = [game.winning_team_player1_id, game.winning_team_player2_id].includes(p2.id);
-        const isP1Loser = [game.losing_team_player1_id, game.losing_team_player2_id].includes(p1.id);
-
-        if (isP1Winner && isP2Loser) p1Wins++;
-        if (isP2Winner && isP1Loser) p1Losses++;
-      }
-      setVsStats({ wins: p1Wins, losses: p1Losses });
-    }
+    const vsGames = gamesRaw.filter((g) => {
+      const win = [g.winning_team_player1_id, g.winning_team_player2_id];
+      const lose = [g.losing_team_player1_id, g.losing_team_player2_id];
+      return (
+        (win.includes(p1.id) && lose.includes(p2.id)) ||
+        (win.includes(p2.id) && lose.includes(p1.id))
+      );
+    });
+    let vsWins = 0,
+      vsLosses = 0;
+    vsGames.forEach((g) => {
+      const win = [g.winning_team_player1_id, g.winning_team_player2_id];
+      const lose = [g.losing_team_player1_id, g.losing_team_player2_id];
+      if (win.includes(p1.id) && lose.includes(p2.id)) vsWins++;
+      if (win.includes(p2.id) && lose.includes(p1.id)) vsLosses++;
+    });
+    setVsStats({ wins: vsWins, losses: vsLosses });
   }
-
-
-  function renderProfile(profile: ProfileData | null) {
-    if (!profile) return null;
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 text-center space-y-4">
-        <h2 className="text-2xl font-bold text-gray-800">{profile.trigramme}</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <Target className="w-6 h-6 text-blue-500 mx-auto mb-1" />
-            <p className="text-sm">Jouées</p>
-            <p className="text-lg font-bold">{profile.games_played}</p>
-          </div>
-          <div className="bg-green-50 p-4 rounded-lg">
-            <Award className="w-6 h-6 text-green-500 mx-auto mb-1" />
-            <p className="text-sm">Victoires</p>
-            <p className="text-lg font-bold">{profile.games_won}</p>
-          </div>
-          <div className="bg-red-50 p-4 rounded-lg">
-            <XCircle className="w-6 h-6 text-red-500 mx-auto mb-1" />
-            <p className="text-sm">Défaites</p>
-            <p className="text-lg font-bold">{profile.games_lost}</p>
-          </div>
-          <div className="bg-yellow-50 p-4 rounded-lg">
-            <Percent className="w-6 h-6 text-yellow-500 mx-auto mb-1" />
-            <p className="text-sm">% Victoires</p>
-            <p className="text-lg font-bold">{profile.win_percentage.toFixed(1)}%</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const chartData = profile1 && profile2 ? [
-    {
-      name: "Jouées",
-      [profile1.trigramme]: profile1.games_played,
-      [profile2.trigramme]: profile2.games_played,
-    },
-    {
-      name: "Victoires",
-      [profile1.trigramme]: profile1.games_won,
-      [profile2.trigramme]: profile2.games_won,
-    },
-    {
-      name: "Défaites",
-      [profile1.trigramme]: profile1.games_lost,
-      [profile2.trigramme]: profile2.games_lost,
-    },
-    {
-      name: "% Victoire",
-      [profile1.trigramme]: profile1.win_percentage,
-      [profile2.trigramme]: profile2.win_percentage,
-    },
-  ] : [];
-
-  const radarData = profile1 && profile2 ? [
-    {
-      stat: "Jouées",
-      [profile1.trigramme]: profile1.games_played,
-      [profile2.trigramme]: profile2.games_played,
-    },
-    {
-      stat: "Victoires",
-      [profile1.trigramme]: profile1.games_won,
-      [profile2.trigramme]: profile2.games_won,
-    },
-    {
-      stat: "Défaites",
-      [profile1.trigramme]: profile1.games_lost,
-      [profile2.trigramme]: profile2.games_lost,
-    },
-    {
-      stat: "% Victoires",
-      [profile1.trigramme]: profile1.win_percentage,
-      [profile2.trigramme]: profile2.win_percentage,
-    },
-  ] : [];
 
   const synergyScore = duoStats
     ? Math.round((duoStats.wins / (duoStats.wins + duoStats.losses)) * 100)
     : null;
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold text-center mb-8 flex items-center justify-center">
-        <Users className="w-7 h-7 mr-2 text-blue-600" /> Comparaison de joueurs
-      </h1>
-
-      <div className="flex justify-center space-x-4 mb-8">
-        <select
-          value={trigramme1}
-          onChange={(e) => setTrigramme1(e.target.value)}
-          className="border px-4 py-2 rounded-lg text-sm shadow-sm"
-        >
-          <option value="">Choisir joueur 1</option>
-          {allTrigrammes.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
-
-        <select
-          value={trigramme2}
-          onChange={(e) => setTrigramme2(e.target.value)}
-          className="border px-4 py-2 rounded-lg text-sm shadow-sm"
-        >
-          <option value="">Choisir joueur 2</option>
-          {allTrigrammes.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
-
-        <button
-          onClick={handleCompare}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          Comparer
-        </button>
+    <div className="max-w-6xl mx-auto p-6 space-y-12">
+      <div className="text-center">
+        <h1 className="text-4xl font-extrabold text-gray-800 flex items-center justify-center mb-6">
+          <PieChart className="w-8 h-8 mr-2 text-blue-600" /> Statistiques
+        </h1>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+          <AutocompleteInput
+            value={trigramme1}
+            onChange={setTrigramme1}
+            options={allTrigrammes}
+            placeholder="Trigramme Joueur 1"
+          />
+          <AutocompleteInput
+            value={trigramme2}
+            onChange={setTrigramme2}
+            options={allTrigrammes}
+            placeholder="Trigramme Joueur 2"
+          />
+          <button
+            onClick={handleCompare}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
+          >
+            Comparer
+          </button>
+        </div>
       </div>
 
-      {error && <p className="text-center text-red-500 mb-4">{error}</p>}
+      {profile1 && profile2 && (
+        <div className="space-y-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[profile1, profile2].map((p, idx) => (
+              <div
+                key={idx}
+                className="bg-white p-6 rounded-lg shadow-md text-center space-y-4"
+              >
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {p.trigramme}
+                </h2>
+                <div className="grid grid-cols-2 gap-4">
+                  <Stat
+                    icon={<Target className="text-blue-500" />}
+                    label="Parties jouées"
+                    value={p.games_played}
+                  />
+                  <Stat
+                    icon={<Award className="text-green-500" />}
+                    label="Victoires"
+                    value={p.games_won}
+                  />
+                  <Stat
+                    icon={<XCircle className="text-red-500" />}
+                    label="Défaites"
+                    value={p.games_lost}
+                  />
+                  <Stat
+                    icon={<Percent className="text-yellow-500" />}
+                    label="% Victoire"
+                    value={`${p.win_percentage.toFixed(1)}%`}
+                  />
+                </div>
+                <ScoreCard profile={p} />
+              </div>
+            ))}
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {renderProfile(profile1)}
-        {renderProfile(profile2)}
-      </div>
+          {(duoStats || vsStats) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {duoStats && (
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h2 className="text-xl font-semibold mb-4 flex items-center justify-center gap-2">
+                    <Handshake className="text-green-600" /> Statistiques en duo
+                  </h2>
+                  <div className="space-y-2 text-center">
+                    <p className="text-gray-700">
+                      Victoires ensemble : <strong>{duoStats.wins}</strong>
+                    </p>
+                    <p className="text-gray-700">
+                      Défaites ensemble : <strong>{duoStats.losses}</strong>
+                    </p>
+                    {synergyScore !== null && (
+                      <p className="text-gray-700">
+                        Synergie d'équipe : <strong>{synergyScore}%</strong>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
 
-      {chartData.length > 0 && (
-        <div className="mt-12">
-          <h2 className="text-xl font-bold text-center mb-4 flex items-center justify-center">
-            <BarChart2 className="w-5 h-5 mr-2 text-purple-600" /> Comparaison visuelle
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey={profile1.trigramme} fill="#4f46e5" />
-              <Bar dataKey={profile2.trigramme} fill="#22c55e" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-      {radarData.length > 0 && (
-        <div className="mt-16">
-          <h2 className="text-xl font-bold text-center mb-4 flex items-center justify-center">
-            <Activity className="w-5 h-5 mr-2 text-rose-600" /> Radar des performances
-          </h2>
-          <ResponsiveContainer width="100%" height={400}>
-            <RadarChart outerRadius={150} data={radarData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="stat" />
-              <PolarRadiusAxis />
-              <Radar
-                name={profile1.trigramme}
-                dataKey={profile1.trigramme}
-                stroke="#6366f1"
-                fill="#6366f1"
-                fillOpacity={0.6}
-              />
-              <Radar
-                name={profile2.trigramme}
-                dataKey={profile2.trigramme}
-                stroke="#10b981"
-                fill="#10b981"
-                fillOpacity={0.6}
-              />
-              <Tooltip />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-
-  
-{duoStats && (
-        <div className="mt-12 text-center">
-          <h2 className="text-xl font-bold mb-2">Statistiques en duo</h2>
-          <p className="text-gray-700">Victoires ensemble : <strong>{duoStats.wins}</strong></p>
-          <p className="text-gray-700">Défaites ensemble : <strong>{duoStats.losses}</strong></p>
-          {synergyScore !== null && (
-            <p className="text-gray-700">Synergie d'équipe : <strong>{synergyScore}%</strong></p>
+              {vsStats && (
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h2 className="text-xl font-semibold mb-4 flex items-center justify-center gap-2">
+                    <Swords className="text-red-600" /> Confrontation directe
+                  </h2>
+                  <div className="space-y-2 text-center">
+                    <p className="text-gray-700">
+                      {profile1.trigramme} a gagné{" "}
+                      <strong>{vsStats.wins}</strong> fois contre{" "}
+                      {profile2.trigramme}
+                    </p>
+                    <p className="text-gray-700">
+                      {profile2.trigramme} a gagné{" "}
+                      <strong>{vsStats.losses}</strong> fois contre{" "}
+                      {profile1.trigramme}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
+
+          <div className="space-y-8">
+            <h2 className="text-xl font-semibold flex items-center justify-center gap-2">
+              <BarChart2 className="text-purple-600" /> Statistiques
+              comparatives
+            </h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={[
+                  {
+                    name: "Parties jouées",
+                    [profile1.trigramme]: profile1.games_played,
+                    [profile2.trigramme]: profile2.games_played,
+                  },
+                  {
+                    name: "Victoires",
+                    [profile1.trigramme]: profile1.games_won,
+                    [profile2.trigramme]: profile2.games_won,
+                  },
+                  {
+                    name: "Défaites",
+                    [profile1.trigramme]: profile1.games_lost,
+                    [profile2.trigramme]: profile2.games_lost,
+                  },
+                  {
+                    name: "% Victoire",
+                    [profile1.trigramme]: profile1.win_percentage,
+                    [profile2.trigramme]: profile2.win_percentage,
+                  },
+                ]}
+              >
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar
+                  dataKey={profile1.trigramme}
+                  fill="#6366f1"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey={profile2.trigramme}
+                  fill="#22c55e"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="space-y-8">
+            <h2 className="text-xl font-semibold flex items-center justify-center gap-2">
+              <Activity className="text-rose-600" /> Radar des performances
+            </h2>
+            <ResponsiveContainer width="100%" height={400}>
+              <RadarChart
+                outerRadius={150}
+                data={[
+                  {
+                    stat: "Jouées",
+                    [profile1.trigramme]: profile1.games_played,
+                    [profile2.trigramme]: profile2.games_played,
+                  },
+                  {
+                    stat: "Victoires",
+                    [profile1.trigramme]: profile1.games_won,
+                    [profile2.trigramme]: profile2.games_won,
+                  },
+                  {
+                    stat: "Défaites",
+                    [profile1.trigramme]: profile1.games_lost,
+                    [profile2.trigramme]: profile2.games_lost,
+                  },
+                  {
+                    stat: "% Victoires",
+                    [profile1.trigramme]: profile1.win_percentage,
+                    [profile2.trigramme]: profile2.win_percentage,
+                  },
+                ]}
+              >
+                <PolarGrid />
+                <PolarAngleAxis dataKey="stat" />
+                <PolarRadiusAxis />
+                <Radar
+                  name={profile1.trigramme}
+                  dataKey={profile1.trigramme}
+                  stroke="#6366f1"
+                  fill="#6366f1"
+                  fillOpacity={0.6}
+                />
+                <Radar
+                  name={profile2.trigramme}
+                  dataKey={profile2.trigramme}
+                  stroke="#22c55e"
+                  fill="#22c55e"
+                  fillOpacity={0.6}
+                />
+                <Tooltip />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* <SummaryTable p1={profile1} p2={profile2} /> */}
         </div>
       )}
-
-      {vsStats && (
-        <div className="mt-8 text-center">
-          <h2 className="text-xl font-bold mb-2">Statistiques en confrontation directe</h2>
-          <p className="text-gray-700">{profile1?.trigramme} a gagné <strong>{vsStats.wins}</strong> fois contre {profile2?.trigramme}</p>
-          <p className="text-gray-700">{profile2?.trigramme} a gagné <strong>{vsStats.losses}</strong> fois contre {profile1?.trigramme}</p>
-        </div>
-      )}
-
     </div>
   );
 }
-
