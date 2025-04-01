@@ -121,33 +121,20 @@ function ScoreCard({ profile }: { profile: ProfileData }) {
 //   );
 // }
 
-function AutocompleteInput({
-  value,
-  onChange,
-  options,
-  placeholder,
-}: {
-  value: string;
-  onChange: (val: string) => void;
-  options: string[];
-  placeholder: string;
-}) {
+function SelectInput({ value, onChange, options, disabledOption, placeholder }) {
   return (
-    <div className="relative w-full max-w-xs">
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value.toUpperCase())}
-        placeholder={placeholder}
-        className="w-full border border-gray-300 rounded-md px-4 py-2"
-        list="trigrammes"
-      />
-      <datalist id="trigrammes">
-        {options.map((opt) => (
-          <option key={opt} value={opt} />
-        ))}
-      </datalist>
-    </div>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full border border-gray-300 rounded-md px-4 py-2"
+    >
+      <option value="" disabled hidden>{placeholder}</option>
+      {options.map((opt) => (
+        <option key={opt} value={opt} disabled={opt === disabledOption}>
+          {opt}
+        </option>
+      ))}
+    </select>
   );
 }
 
@@ -176,6 +163,12 @@ export default function ComparePage() {
   }, []);
 
   async function handleCompare() {
+    if (trigramme1 === trigramme2) {
+      alert(
+        "Veuillez sélectionner deux joueurs différents pour la comparaison."
+      );
+      return;
+    }
     const { data: p1 } = await supabase
       .from("profiles")
       .select("*")
@@ -244,25 +237,28 @@ export default function ComparePage() {
           <PieChart className="w-8 h-8 mr-2 text-blue-600" /> Statistiques
         </h1>
         <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-          <AutocompleteInput
-            value={trigramme1}
-            onChange={setTrigramme1}
-            options={allTrigrammes}
-            placeholder="Trigramme Joueur 1"
-          />
-          <AutocompleteInput
-            value={trigramme2}
-            onChange={setTrigramme2}
-            options={allTrigrammes}
-            placeholder="Trigramme Joueur 2"
-          />
-          <button
-            onClick={handleCompare}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
-          >
-            Comparer
-          </button>
-        </div>
+  <SelectInput
+    value={trigramme1}
+    onChange={setTrigramme1}
+    options={allTrigrammes}
+    disabledOption={trigramme2}
+    placeholder="Trigramme Joueur 1"
+  />
+  <SelectInput
+    value={trigramme2}
+    onChange={setTrigramme2}
+    options={allTrigrammes}
+    disabledOption={trigramme1}
+    placeholder="Trigramme Joueur 2"
+  />
+  <button
+    onClick={handleCompare}
+    className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+    disabled={!trigramme1 || !trigramme2}
+  >
+    Comparer
+  </button>
+</div>
       </div>
 
       {profile1 && profile2 && (
