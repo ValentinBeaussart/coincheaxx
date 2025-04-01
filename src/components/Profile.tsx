@@ -232,14 +232,15 @@ export default function Profile() {
           game.losing_team_player2_id === marcId)
     ).length;
   }, [gameHistory, profile?.id, marcId]);
-  const consecutiveWins = useMemo(() => {
-    if (!profile?.id) return 0;
-    const today = new Date();
-    const recentGames = gameHistory.filter(
-      (game) => new Date(game.created_at).toDateString() === today.toDateString()
-    );
-    return getConsecutiveWins(profile.id, recentGames);
-  }, [gameHistory, profile?.id]);
+const consecutiveWins = useMemo(() => {
+  if (!profile?.id) return 0;
+  const startDate = new Date("2025-03-24");
+  const filteredGames = gameHistory
+    .filter((game) => new Date(game.created_at) >= startDate)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+  return getConsecutiveWins(profile.id, filteredGames);
+}, [gameHistory, profile?.id]);
 
   const sadVBE = useMemo(() => {
     if (!profile?.id || !playersMap) return false;
