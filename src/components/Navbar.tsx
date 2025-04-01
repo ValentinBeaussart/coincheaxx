@@ -6,6 +6,7 @@ import {
   LogOut,
   User,
   PlayCircle,
+  PieChart,
   Menu,
   X,
   Users,
@@ -76,6 +77,13 @@ export default function Navbar() {
                   Les Coincheurs
                 </Link>
                 <Link
+                  to="/stats"
+                  className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                >
+                  <PieChart className="h-5 w-5 mr-1" />
+                  Statistiques
+                </Link>
+                <Link
                   to="/profile"
                   className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
                 >
@@ -105,6 +113,13 @@ export default function Navbar() {
                 >
                   <Users className="h-5 w-5 mr-1" />
                   Les Coincheurs
+                </Link>
+                <Link
+                  to="/stats"
+                  className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                >
+                  <PieChart className="h-5 w-5 mr-1" />
+                  Statistiques
                 </Link>
                 <Link
                   to="/login"
@@ -158,6 +173,13 @@ export default function Navbar() {
                   Les Coincheurs
                 </Link>
                 <Link
+                  to="/stats"
+                  className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                >
+                  <PieChart className="h-5 w-5 mr-1" />
+                  Statistiques
+                </Link>
+                <Link
                   to="/profile"
                   className="block px-3 py-2 text-gray-700 hover:text-[#0342AF]"
                   onClick={() => setIsMenuOpen(false)}
@@ -193,6 +215,13 @@ export default function Navbar() {
                 >
                   <Users className="h-5 w-5 mr-1" />
                   Les Coincheurs
+                </Link>
+                <Link
+                  to="/stats"
+                  className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                >
+                  <PieChart className="h-5 w-5 mr-1" />
+                  Statistiques
                 </Link>
                 <Link
                   to="/login"
