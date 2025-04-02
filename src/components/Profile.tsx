@@ -260,12 +260,8 @@ export default function Profile() {
     if (!profile?.id) return 0;
     const startDate = new Date("2025-03-24");
     const filteredGames = gameHistory
-      .filter((game) => new Date(game.created_at) >= startDate)
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-    return getConsecutiveWins(profile.id, filteredGames);
+      .filter((game) => new Date(game.created_at) >= startDate);
+    return getBestConsecutiveWins(profile.id, filteredGames);
   }, [gameHistory, profile?.id]);
 
   const sadVBE = useMemo(() => {
@@ -290,21 +286,32 @@ export default function Profile() {
     });
   }, [gameHistory, profile?.id, playersMap]);
 
-  function getConsecutiveWins(profileId: string, games: GameHistory[]): number {
-    let streak = 0;
-    for (const game of games) {
+  function getBestConsecutiveWins(profileId: string, games: GameHistory[]): number {
+    let maxStreak = 0;
+    let currentStreak = 0;
+  
+    for (const game of [...games].sort((a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )) {
       const isWinner =
         game.winning_team_player1_id === profileId ||
         game.winning_team_player2_id === profileId;
       const isLoser =
         game.losing_team_player1_id === profileId ||
         game.losing_team_player2_id === profileId;
+  
       if (!isWinner && !isLoser) continue;
-      if (isWinner) streak++;
-      else break;
+  
+      if (isWinner) {
+        currentStreak++;
+        maxStreak = Math.max(maxStreak, currentStreak);
+      } else {
+        currentStreak = 0;
+      }
     }
-    return streak;
-  }
+  
+    return maxStreak;
+  }  
 
   const badgeList = [
     {

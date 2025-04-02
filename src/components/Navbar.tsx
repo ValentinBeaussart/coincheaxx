@@ -127,12 +127,12 @@ export default function Navbar() {
                 >
                   Connexion
                 </Link>
-                <Link
+                {/* <Link
                   to="/register"
                   className="flex items-center px-4 py-2 bg-[#0342AF] text-white rounded-md hover:bg-[#0342AF]/90"
                 >
                   Inscription
-                </Link>
+                </Link> */}
               </>
             )}
           </div>
@@ -168,6 +168,7 @@ export default function Navbar() {
                 <Link
                   to="/joueurs"
                   className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   <Users className="h-5 w-5 mr-1" />
                   Les Coincheurs
@@ -175,6 +176,7 @@ export default function Navbar() {
                 <Link
                   to="/stats"
                   className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   <PieChart className="h-5 w-5 mr-1" />
                   Statistiques
@@ -212,6 +214,7 @@ export default function Navbar() {
                 <Link
                   to="/joueurs"
                   className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   <Users className="h-5 w-5 mr-1" />
                   Les Coincheurs
@@ -219,6 +222,7 @@ export default function Navbar() {
                 <Link
                   to="/stats"
                   className="flex items-center px-3 py-2 text-gray-700 hover:text-[#0342AF]"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   <PieChart className="h-5 w-5 mr-1" />
                   Statistiques
@@ -230,13 +234,12 @@ export default function Navbar() {
                 >
                   Connexion
                 </Link>
-                <Link
+                {/* <Link
                   to="/register"
-                  className="block px-3 py-2 bg-[#0342AF] text-white rounded-md hover:bg-[#0342AF]/90"
-                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center px-4 py-2 bg-[#0342AF] text-white rounded-md hover:bg-[#0342AF]/90"
                 >
                   Inscription
-                </Link>
+                </Link> */}
               </>
             )}
           </div>
