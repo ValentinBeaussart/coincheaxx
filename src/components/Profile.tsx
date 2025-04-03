@@ -31,6 +31,7 @@ import Ten from "../assets/icons/10kills.png";
 import Nap from "../assets/icons/napnap.jpg";
 
 import { Badge } from "../components/Badge";
+import { ZoomableBadgeModal } from "../components/ZoomableBadgeModal"
 
 interface ProfileData {
   id: string;
@@ -66,6 +67,7 @@ export default function Profile() {
   const [playersMap, setPlayersMap] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
   const { trigramme } = useParams<{ trigramme?: string }>();
+  const [zoomedBadge, setZoomedBadge] = useState<any>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -265,15 +267,15 @@ export default function Profile() {
     );
     return getBestConsecutiveWins(profile.id, filteredGames);
   }, [gameHistory, profile?.id]);
-  
+
   const currentConsecutiveWins = useMemo(() => {
     if (!profile?.id) return 0;
     const filteredGames = gameHistory
       .filter((game) => new Date(game.created_at) >= startDate)
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-  
+
     let streak = 0;
-  
+
     for (let i = filteredGames.length - 1; i >= 0; i--) {
       const game = filteredGames[i];
       const isWinner =
@@ -282,16 +284,16 @@ export default function Profile() {
       const isLoser =
         game.losing_team_player1_id === profile.id ||
         game.losing_team_player2_id === profile.id;
-  
+
       if (!isWinner && !isLoser) continue;
-  
+
       if (isWinner) {
         streak++;
       } else {
         break; // streak terminée
       }
     }
-  
+
     return streak;
   }, [gameHistory, profile?.id]);
 
@@ -320,7 +322,7 @@ export default function Profile() {
   function getBestConsecutiveWins(profileId: string, games: GameHistory[]): number {
     let maxStreak = 0;
     let currentStreak = 0;
-  
+
     for (const game of [...games].sort((a, b) =>
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )) {
@@ -330,9 +332,9 @@ export default function Profile() {
       const isLoser =
         game.losing_team_player1_id === profileId ||
         game.losing_team_player2_id === profileId;
-  
+
       if (!isWinner && !isLoser) continue;
-  
+
       if (isWinner) {
         currentStreak++;
         maxStreak = Math.max(maxStreak, currentStreak);
@@ -340,9 +342,9 @@ export default function Profile() {
         currentStreak = 0;
       }
     }
-  
+
     return maxStreak;
-  }  
+  }
 
   const badgeList = [
     {
@@ -540,18 +542,17 @@ export default function Profile() {
                 badge.target !== undefined;
               const percentage = showProgress
                 ? Math.min(
-                    100,
-                    Math.round((badge.current / badge.target) * 100)
-                  )
+                  100,
+                  Math.round((badge.current / badge.target) * 100)
+                )
                 : 0;
               return (
                 <div
                   key={index}
-                  className={`text-center transform transition-transform duration-200 hover:scale-105 hover:opacity-100 ${
-                    badge.condition ? "" : "opacity-100"
-                  } ${
-                    badge.condition && badge.justUnlocked ? "animate-pulse" : ""
-                  }`}
+                  onClick={() => setZoomedBadge(badge)}
+                  className={`text-center transform transition-transform duration-200 hover:scale-105 hover:opacity-100 ${badge.condition ? "" : "opacity-100"
+                    } ${badge.condition && badge.justUnlocked ? "animate-pulse" : ""
+                    }`}
                   title={badge.description}
                 >
                   <Badge
@@ -560,11 +561,9 @@ export default function Profile() {
                     icon={badge.icon}
                     description={badge.description}
                     disabled={!badge.condition}
-                    progress={
-                      showProgress
-                        ? `${badge.current}/${badge.target}`
-                        : undefined
-                    }
+                    progress={showProgress ? `${badge.current}/${badge.target}` : undefined}
+                    onClick={badge.condition ? () => setZoomedBadge(badge) : undefined}
+                    flipped={!badge.condition ? undefined : false}
                   />
                   {showProgress && (
                     <div className="mt-2 px-2">
@@ -690,13 +689,12 @@ export default function Profile() {
                   return (
                     <div
                       key={game.id}
-                      className={`p-4 rounded-lg ${
-                        isWinner
+                      className={`p-4 rounded-lg ${isWinner
                           ? "bg-green-50"
                           : isLoser
-                          ? "bg-red-50"
-                          : "bg-gray-50"
-                      }`}
+                            ? "bg-red-50"
+                            : "bg-gray-50"
+                        }`}
                     >
                       <div className="flex justify-between items-center">
                         <div>
@@ -704,8 +702,8 @@ export default function Profile() {
                             {isWinner
                               ? "Victoire"
                               : isLoser
-                              ? "Défaite"
-                              : "Match neutre"}
+                                ? "Défaite"
+                                : "Match neutre"}
                           </span>
                           <span className="text-sm text-gray-600 ml-2">
                             {new Date(game.created_at).toLocaleDateString()}
@@ -742,6 +740,12 @@ export default function Profile() {
                 {showAllGames ? "Voir moins" : "Voir plus"}
               </button>
             </div>
+          )}
+          {zoomedBadge && (
+            <ZoomableBadgeModal
+              badge={zoomedBadge}
+              onClose={() => setZoomedBadge(null)}
+            />
           )}
         </div>
       </div>

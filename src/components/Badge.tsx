@@ -6,7 +6,9 @@ interface BadgeProps {
   className?: string;
   description: string;
   disabled?: boolean;
-  progress?: string; // ← ajouté
+  progress?: string;
+  flipped?: boolean;
+  onClick?: () => void;
 }
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -15,22 +17,29 @@ export const Badge: React.FC<BadgeProps> = ({
   className = "",
   description,
   disabled = false,
+  flipped: flippedProp,
   progress,
+  onClick,
 }) => {
-  const [flipped, setFlipped] = useState(false);
+  const [localFlipped, setLocalFlipped] = useState(false);
+  const flipped = flippedProp ?? localFlipped;
 
   return (
     <div
       className={`badge-wrapper ${disabled ? "opacity-80 grayscale" : ""}`}
-      onClick={() => setFlipped(!flipped)}
+      onClick={() => {
+        if (typeof onClick === "function") {
+          onClick();
+        } else if (flippedProp === undefined) {
+          setLocalFlipped(!localFlipped);
+        }
+      }}
     >
       <div className={`badge ${flipped ? "is-flipped" : ""}`}>
         <div className={`badge-face badge-front`}>
           <div className={`badge-shape ${className}`}>
             <div className="circle">{icon}</div>
-            <div className="ribbon">
-              {label}
-            </div>
+            <div className="ribbon">{label}</div>
           </div>
         </div>
         <div className={`badge-face badge-back`}>
