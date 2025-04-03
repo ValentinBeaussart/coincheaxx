@@ -256,12 +256,43 @@ export default function Profile() {
     ).length;
   }, [gameHistory, profile?.id, marcId]);
 
-  const consecutiveWins = useMemo(() => {
+  const startDate = new Date("2025-03-24");
+
+  const maxConsecutiveWins = useMemo(() => {
     if (!profile?.id) return 0;
-    const startDate = new Date("2025-03-24");
-    const filteredGames = gameHistory
-      .filter((game) => new Date(game.created_at) >= startDate);
+    const filteredGames = gameHistory.filter(
+      (game) => new Date(game.created_at) >= startDate
+    );
     return getBestConsecutiveWins(profile.id, filteredGames);
+  }, [gameHistory, profile?.id]);
+  
+  const currentConsecutiveWins = useMemo(() => {
+    if (!profile?.id) return 0;
+    const filteredGames = gameHistory
+      .filter((game) => new Date(game.created_at) >= startDate)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+  
+    let streak = 0;
+  
+    for (let i = filteredGames.length - 1; i >= 0; i--) {
+      const game = filteredGames[i];
+      const isWinner =
+        game.winning_team_player1_id === profile.id ||
+        game.winning_team_player2_id === profile.id;
+      const isLoser =
+        game.losing_team_player1_id === profile.id ||
+        game.losing_team_player2_id === profile.id;
+  
+      if (!isWinner && !isLoser) continue;
+  
+      if (isWinner) {
+        streak++;
+      } else {
+        break; // streak terminée
+      }
+    }
+  
+    return streak;
   }, [gameHistory, profile?.id]);
 
   const sadVBE = useMemo(() => {
@@ -426,8 +457,8 @@ export default function Profile() {
       label: "Double Kill",
       icon: <img src={Two} className="w-11 h-11" />,
       description: "2 victoires consécutives",
-      condition: consecutiveWins >= 2,
-      current: consecutiveWins,
+      condition: maxConsecutiveWins >= 2,
+      current: currentConsecutiveWins,
       target: 2,
       className: "aqua-glow",
     },
@@ -435,8 +466,8 @@ export default function Profile() {
       label: "Triple Kill",
       icon: <img src={Three} className="w-11 h-11" />,
       description: "3 victoires consécutives",
-      condition: consecutiveWins >= 3,
-      current: consecutiveWins,
+      condition: maxConsecutiveWins >= 3,
+      current: currentConsecutiveWins,
       target: 3,
       className: "night",
     },
@@ -444,8 +475,8 @@ export default function Profile() {
       label: "Penta Kill",
       icon: <img src={Five} className="w-11 h-11" />,
       description: "5 victoires consécutives",
-      condition: consecutiveWins >= 5,
-      current: consecutiveWins,
+      condition: maxConsecutiveWins >= 5,
+      current: currentConsecutiveWins,
       target: 5,
       className: "sunset",
     },
@@ -453,8 +484,8 @@ export default function Profile() {
       label: "Holy Shit",
       icon: <img src={Ten} className="w-11 h-11" />,
       description: "10 victoires consécutives",
-      condition: consecutiveWins >= 10,
-      current: consecutiveWins,
+      condition: maxConsecutiveWins >= 10,
+      current: currentConsecutiveWins,
       target: 10,
       className: "gold",
     },
