@@ -366,15 +366,15 @@ export default function Profile() {
         game.winning_team_player2_id === profileId ||
         game.losing_team_player1_id === profileId ||
         game.losing_team_player2_id === profileId;
-  
+
       if (!isInTeam) continue;
-  
+
       const teamScore =
         game.winning_team_player1_id === profileId ||
-        game.winning_team_player2_id === profileId
+          game.winning_team_player2_id === profileId
           ? game.score_nous
           : game.score_eux;
-  
+
       total += teamScore;
     }
     return total;
@@ -673,14 +673,14 @@ export default function Profile() {
                     flipped={!badge.condition ? undefined : false}
                   />
                   {showProgress && (
-                    <div className="mt-2 px-2">
+                    <div className="mt-2 px-2 max-w-[100px] mx-auto w-full">
                       <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-blue-500 transition-all duration-300"
                           style={{ width: `${percentage}%` }}
                         ></div>
                       </div>
-                      <div className="text-xs text-gray-600 font-medium mt-1">
+                      <div className="text-xs text-gray-600 font-medium mt-1 text-center">
                         {badge.current}/{badge.target} ({percentage}%)
                       </div>
                     </div>
@@ -797,10 +797,10 @@ export default function Profile() {
                     <div
                       key={game.id}
                       className={`p-4 rounded-lg ${isWinner
-                          ? "bg-green-50"
-                          : isLoser
-                            ? "bg-red-50"
-                            : "bg-gray-50"
+                        ? "bg-green-50"
+                        : isLoser
+                          ? "bg-red-50"
+                          : "bg-gray-50"
                         }`}
                     >
                       <div className="flex justify-between items-center">
