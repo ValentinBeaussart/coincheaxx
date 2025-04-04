@@ -29,6 +29,13 @@ import Three from "../assets/icons/3kills.png";
 import Five from "../assets/icons/5kills.png";
 import Ten from "../assets/icons/10kills.png";
 import Nap from "../assets/icons/napnap.jpg";
+import Disciple from "../assets/icons/disciple.png";
+import Elu from "../assets/icons/elu.png";
+import Messie from "../assets/icons/messie.png";
+import Prophete from "../assets/icons/prophète.png";
+import Sylvain from "../assets/icons/sylvain.webp";
+import GGEZ from "../assets/icons/ggez.jpg";
+import JGLDIFF from "../assets/icons/jgldiff.jpg"
 
 import { Badge } from "../components/Badge";
 import { ZoomableBadgeModal } from "../components/ZoomableBadgeModal"
@@ -319,6 +326,11 @@ export default function Profile() {
     });
   }, [gameHistory, profile?.id, playersMap]);
 
+  const totalPoints = useMemo(() => {
+    if (!profile?.id) return 0;
+    return getTotalPoints(profile.id, gameHistory);
+  }, [profile?.id, gameHistory]);
+
   function getBestConsecutiveWins(profileId: string, games: GameHistory[]): number {
     let maxStreak = 0;
     let currentStreak = 0;
@@ -344,6 +356,28 @@ export default function Profile() {
     }
 
     return maxStreak;
+  }
+
+  function getTotalPoints(profileId: string, games: GameHistory[]): number {
+    let total = 0;
+    for (const game of games) {
+      const isInTeam =
+        game.winning_team_player1_id === profileId ||
+        game.winning_team_player2_id === profileId ||
+        game.losing_team_player1_id === profileId ||
+        game.losing_team_player2_id === profileId;
+  
+      if (!isInTeam) continue;
+  
+      const teamScore =
+        game.winning_team_player1_id === profileId ||
+        game.winning_team_player2_id === profileId
+          ? game.score_nous
+          : game.score_eux;
+  
+      total += teamScore;
+    }
+    return total;
   }
 
   const badgeList = [
@@ -500,6 +534,79 @@ export default function Profile() {
       target: 1,
       className: "gray-dark",
     },
+    {
+      label: "Disciple",
+      icon: <img src={Disciple} className="w-11 h-11 rounded-full" />,
+      description: "Atteindre 10 000 points cumulés",
+      condition: totalPoints >= 10_000,
+      current: totalPoints,
+      target: 10_000,
+      className: "ocean",
+    },
+    {
+      label: "Élu",
+      icon: <img src={Elu} className="w-11 h-11 rounded-full" />,
+      description: "Atteindre 50 000 points cumulés",
+      condition: totalPoints >= 50_000,
+      current: totalPoints,
+      target: 50_000,
+      className: "rose",
+    },
+    {
+      label: "Messie Galactique",
+      icon: <img src={Messie} className="w-11 h-11 rounded-full" />,
+      description: "Atteindre 100 000 points cumulés",
+      condition: totalPoints >= 100_000,
+      current: totalPoints,
+      target: 100_000,
+      className: "shadow-badge",
+    },
+    {
+      label: "Prophète Solaire",
+      icon: <img src={Prophete} className="w-11 h-11 rounded-full" />,
+      description: "Atteindre 500 000 points cumulés",
+      condition: totalPoints >= 500_000,
+      current: totalPoints,
+      target: 500_000,
+      className: "lava",
+    },
+    {
+      label: "Christ Cosmique",
+      icon: <img src={Sylvain} className="w-11 h-11 rounded-full" />,
+      description: "Atteindre 1 000 000 points cumulés",
+      condition: totalPoints >= 1_000_000,
+      current: totalPoints,
+      target: 1_000_000,
+      className: "mint",
+    },
+    {
+      label: "GG EZ",
+      icon: <img src={GGEZ} className="w-11 h-11 rounded-full" />,
+      description: "Gagner avec 3000 points d'écart",
+      condition: gameHistory.some(
+        (game) =>
+          (game.winning_team_player1_id === profile?.id ||
+            game.winning_team_player2_id === profile?.id) &&
+          (Math.abs(game.score_nous - game.score_eux) >= 3000)
+      ),
+      current: 0,
+      target: 1,
+      className: "ice",
+    },
+    {
+      label: "JUNGLE DIFF",
+      icon: <img src={JGLDIFF} className="w-11 h-11 rounded-full" />,
+      description: "Perdre avec 3000 points d'écart",
+      condition: gameHistory.some(
+        (game) =>
+          (game.losing_team_player1_id === profile?.id ||
+            game.losing_team_player2_id === profile?.id) &&
+          (Math.abs(game.score_nous - game.score_eux) >= 3000)
+      ),
+      current: 0,
+      target: 1,
+      className: "fire",
+    }
   ];
 
   const hasUnlockedUltimateBadge =
