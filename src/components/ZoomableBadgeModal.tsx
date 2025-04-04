@@ -22,8 +22,24 @@ export const ZoomableBadgeModal: React.FC<ZoomableBadgeModalProps> = ({ badge, o
   const animationRef = useRef<number | null>(null);
 
   useEffect(() => {
+    const preventScroll = (e: TouchEvent) => {
+      if (containerRef.current?.contains(e.target as Node)) {
+        e.preventDefault();
+      }
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("touchmove", preventScroll, { passive: false });
+    return () => {
+      document.body.style.overflow = "auto";
+      document.removeEventListener("touchmove", preventScroll);
+    };
+  }, []);
+
+  useEffect(() => {
     const rotate = () => {
-      setRotation((prev) => prev + 0.6);
+      if (!isDragging.current) {
+        setRotation((prev) => prev + 0.6);
+      }
       animationRef.current = requestAnimationFrame(rotate);
     };
     animationRef.current = requestAnimationFrame(rotate);
@@ -49,13 +65,17 @@ export const ZoomableBadgeModal: React.FC<ZoomableBadgeModalProps> = ({ badge, o
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     if (e.touches.length === 1) {
+      lastTouchX.current = e.touches[0].clientX;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 1 && lastTouchX.current !== null) {
       const touchX = e.touches[0].clientX;
-      if (lastTouchX.current !== null) {
-        const deltaX = touchX - lastTouchX.current;
-        setRotation((prev) => prev + deltaX * 0.5);
-      }
+      const deltaX = touchX - lastTouchX.current;
+      setRotation((prev) => prev + deltaX * 0.5);
       lastTouchX.current = touchX;
     }
   };
@@ -64,8 +84,6 @@ export const ZoomableBadgeModal: React.FC<ZoomableBadgeModalProps> = ({ badge, o
     lastTouchX.current = null;
   };
 
-  const isFlipped = (rotation % 360 + 360) % 360 >= 90 && (rotation % 360 + 360) % 360 <= 270;
-
   return (
     <div
       ref={containerRef}
@@ -73,6 +91,7 @@ export const ZoomableBadgeModal: React.FC<ZoomableBadgeModalProps> = ({ badge, o
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
+      onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       className="fixed inset-0 z-[9999] bg-black bg-opacity-70 flex flex-col items-center justify-center animate-fade-in"
@@ -104,7 +123,10 @@ export const ZoomableBadgeModal: React.FC<ZoomableBadgeModalProps> = ({ badge, o
                 <div className="ribbon">{badge.label}</div>
               </div>
             </div>
-            <div className="badge-face badge-back" style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden" }}>
+            <div
+              className="badge-face badge-back"
+              style={{ transform: "rotateY(180deg)", backfaceVisibility: "hidden" }}
+            >
               <div className={`badge-shape ${badge.className || ""}`}>
                 <div className="circle text-[10px] text-center px-2 leading-tight text-black bg-white flex items-center justify-center">
                   {badge.description}
