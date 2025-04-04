@@ -15,7 +15,8 @@ interface ZoomableBadgeModalProps {
 export const ZoomableBadgeModal: React.FC<ZoomableBadgeModalProps> = ({ badge, onClose }) => {
   if (!badge.condition) return null;
 
-  const [rotation, setRotation] = useState(0);
+  const rotationRef = useRef(0);
+  const badgeElementRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const lastTouchX = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,10 +39,14 @@ export const ZoomableBadgeModal: React.FC<ZoomableBadgeModalProps> = ({ badge, o
   useEffect(() => {
     const rotate = () => {
       if (!isDragging.current) {
-        setRotation((prev) => prev + 0.6);
+        rotationRef.current += 0.6;
+      }
+      if (badgeElementRef.current) {
+        badgeElementRef.current.style.transform = `scale(2.2) rotateY(${rotationRef.current}deg)`;
       }
       animationRef.current = requestAnimationFrame(rotate);
     };
+
     animationRef.current = requestAnimationFrame(rotate);
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
@@ -61,7 +66,7 @@ export const ZoomableBadgeModal: React.FC<ZoomableBadgeModalProps> = ({ badge, o
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (isDragging.current) {
-      setRotation((prev) => prev + e.movementX * 0.5);
+      rotationRef.current += e.movementX * 0.5;
     }
   };
 
@@ -75,8 +80,8 @@ export const ZoomableBadgeModal: React.FC<ZoomableBadgeModalProps> = ({ badge, o
     if (e.touches.length === 1 && lastTouchX.current !== null) {
       const touchX = e.touches[0].clientX;
       const deltaX = touchX - lastTouchX.current;
-      setRotation((prev) => prev + deltaX * 0.5);
-      lastTouchX.current = touchX;
+      rotationRef.current += deltaX * 0.5;
+            lastTouchX.current = touchX;
     }
   };
 
@@ -106,14 +111,13 @@ export const ZoomableBadgeModal: React.FC<ZoomableBadgeModalProps> = ({ badge, o
 
       <div className="flex flex-col items-center">
         <div
+          ref={badgeElementRef}
           className="badge-wrapper w-[8rem] h-[12rem]"
           style={{
-            transform: `scale(2.2) rotateY(${rotation}deg)`,
             transformStyle: "preserve-3d",
             backfaceVisibility: "hidden",
             willChange: "transform",
-            filter: "none",
-            transition: "transform 0.1s linear"
+            filter: "none"
           }}
         >
           <div className="badge" style={{ transformStyle: "preserve-3d" }}>
