@@ -31,7 +31,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
+          <Link to="/">
             <img src={Logo} alt="Logo" className="w-11 h-11" />
+          </Link>
             <span className="ml-2 text-xl font-bold hidden sm:block">
               AxeoCOINCHE
             </span>

@@ -184,8 +184,8 @@ export default function Profile() {
                 winsAgainst: 0,
                 lossesAgainst: 0,
               };
-            if (isLoser) playerStats[opponent].winsAgainst++;
-            else playerStats[opponent].lossesAgainst++;
+            if (isLoser) playerStats[opponent].lossesAgainst++;
+            else playerStats[opponent].winsAgainst++;
           });
         });
 
