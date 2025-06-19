@@ -35,10 +35,11 @@ import Messie from "../assets/icons/messie.png";
 import Prophete from "../assets/icons/prophète.png";
 import Sylvain from "../assets/icons/sylvain.webp";
 import GGEZ from "../assets/icons/ggez.jpg";
-import JGLDIFF from "../assets/icons/jgldiff.jpg"
+import JGLDIFF from "../assets/icons/jgldiff.jpg";
+import Happy from "../assets/icons/happyvbe.png";
 
 import { Badge } from "../components/Badge";
-import { ZoomableBadgeModal } from "../components/ZoomableBadgeModal"
+import { ZoomableBadgeModal } from "../components/ZoomableBadgeModal";
 
 interface ProfileData {
   id: string;
@@ -279,7 +280,10 @@ export default function Profile() {
     if (!profile?.id) return 0;
     const filteredGames = gameHistory
       .filter((game) => new Date(game.created_at) >= startDate)
-      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      .sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
 
     let streak = 0;
 
@@ -326,17 +330,48 @@ export default function Profile() {
     });
   }, [gameHistory, profile?.id, playersMap]);
 
+  const happyVBE = useMemo(() => {
+    if (!profile?.id || !playersMap) return false;
+    const vbeId = Object.entries(playersMap).find(
+      ([, trig]) => trig === "VBE"
+    )?.[0];
+    if (!vbeId) return false;
+    return gameHistory.some((game) => {
+      const isVbeWinner = [
+        game.winning_team_player1_id,
+        game.winning_team_player2_id,
+      ].includes(vbeId);
+      const isPlayerWinner = [
+        game.winning_team_player1_id,
+        game.winning_team_player2_id,
+      ].includes(profile.id);
+      const isSameTeam =
+        (game.winning_team_player1_id === profile.id &&
+          game.winning_team_player2_id === vbeId) ||
+        (game.winning_team_player2_id === profile.id &&
+          game.winning_team_player1_id === vbeId);
+      const isJune18 =
+        new Date(game.created_at).getMonth() === 5 &&
+        new Date(game.created_at).getDate() === 18;
+      return isVbeWinner && isPlayerWinner && isSameTeam && isJune18;
+    });
+  }, [gameHistory, profile?.id, playersMap]);
+
   const totalPoints = useMemo(() => {
     if (!profile?.id) return 0;
     return getTotalPoints(profile.id, gameHistory);
   }, [profile?.id, gameHistory]);
 
-  function getBestConsecutiveWins(profileId: string, games: GameHistory[]): number {
+  function getBestConsecutiveWins(
+    profileId: string,
+    games: GameHistory[]
+  ): number {
     let maxStreak = 0;
     let currentStreak = 0;
 
-    for (const game of [...games].sort((a, b) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    for (const game of [...games].sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )) {
       const isWinner =
         game.winning_team_player1_id === profileId ||
@@ -371,7 +406,7 @@ export default function Profile() {
 
       const teamScore =
         game.winning_team_player1_id === profileId ||
-          game.winning_team_player2_id === profileId
+        game.winning_team_player2_id === profileId
           ? game.score_nous
           : game.score_eux;
 
@@ -587,7 +622,7 @@ export default function Profile() {
         (game) =>
           (game.winning_team_player1_id === profile?.id ||
             game.winning_team_player2_id === profile?.id) &&
-          (Math.abs(game.score_nous - game.score_eux) >= 3000)
+          Math.abs(game.score_nous - game.score_eux) >= 3000
       ),
       current: 0,
       target: 1,
@@ -601,12 +636,21 @@ export default function Profile() {
         (game) =>
           (game.losing_team_player1_id === profile?.id ||
             game.losing_team_player2_id === profile?.id) &&
-          (Math.abs(game.score_nous - game.score_eux) >= 3000)
+          Math.abs(game.score_nous - game.score_eux) >= 3000
       ),
       current: 0,
       target: 1,
       className: "fire",
-    }
+    },
+    {
+      label: "Happy VBE",
+      icon: <img src={Happy} className="w-11 h-11 rounded-full" />,
+      description: "Gagner avec NapNap un 18 juin !",
+      condition: happyVBE,
+      current: happyVBE ? 1 : 0,
+      target: 1,
+      className: "liberty",
+    },
   ];
 
   const hasUnlockedUltimateBadge =
@@ -635,6 +679,8 @@ export default function Profile() {
               if (!showLockedBadges && !badge.condition) return false;
               if (badge.label === "Sad VBE" && trigramme === "VBE")
                 return false;
+              if (badge.label === "Happy VBE" && trigramme === "VBE")
+                return false;
               if (
                 ["Marc Bad Mood", "Marc Slayer"].includes(badge.label) &&
                 trigramme === "MBA"
@@ -649,17 +695,19 @@ export default function Profile() {
                 badge.target !== undefined;
               const percentage = showProgress
                 ? Math.min(
-                  100,
-                  Math.round((badge.current / badge.target) * 100)
-                )
+                    100,
+                    Math.round((badge.current / badge.target) * 100)
+                  )
                 : 0;
               return (
                 <div
                   key={index}
                   onClick={() => setZoomedBadge(badge)}
-                  className={`text-center transform transition-transform duration-200 hover:scale-105 hover:opacity-100 ${badge.condition ? "" : "opacity-100"
-                    } ${badge.condition && badge.justUnlocked ? "animate-pulse" : ""
-                    }`}
+                  className={`text-center transform transition-transform duration-200 hover:scale-105 hover:opacity-100 ${
+                    badge.condition ? "" : "opacity-100"
+                  } ${
+                    badge.condition && badge.justUnlocked ? "animate-pulse" : ""
+                  }`}
                   title={badge.description}
                 >
                   <Badge
@@ -668,8 +716,14 @@ export default function Profile() {
                     icon={badge.icon}
                     description={badge.description}
                     disabled={!badge.condition}
-                    progress={showProgress ? `${badge.current}/${badge.target}` : undefined}
-                    onClick={badge.condition ? () => setZoomedBadge(badge) : undefined}
+                    progress={
+                      showProgress
+                        ? `${badge.current}/${badge.target}`
+                        : undefined
+                    }
+                    onClick={
+                      badge.condition ? () => setZoomedBadge(badge) : undefined
+                    }
                     flipped={!badge.condition ? undefined : false}
                   />
                   {showProgress && (
@@ -796,12 +850,13 @@ export default function Profile() {
                   return (
                     <div
                       key={game.id}
-                      className={`p-4 rounded-lg ${isWinner
-                        ? "bg-green-50"
-                        : isLoser
+                      className={`p-4 rounded-lg ${
+                        isWinner
+                          ? "bg-green-50"
+                          : isLoser
                           ? "bg-red-50"
                           : "bg-gray-50"
-                        }`}
+                      }`}
                     >
                       <div className="flex justify-between items-center">
                         <div>
@@ -809,8 +864,8 @@ export default function Profile() {
                             {isWinner
                               ? "Victoire"
                               : isLoser
-                                ? "Défaite"
-                                : "Match neutre"}
+                              ? "Défaite"
+                              : "Match neutre"}
                           </span>
                           <span className="text-sm text-gray-600 ml-2">
                             {new Date(game.created_at).toLocaleDateString()}

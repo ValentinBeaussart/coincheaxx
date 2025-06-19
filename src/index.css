@@ -243,3 +243,8 @@
   background: linear-gradient(to bottom right, #0288d1 0%, #00695c 100%);
   color: #26c6da;
 }
+
+.liberty {
+  background: linear-gradient(to bottom right, #81d4fa 0%, #4dd0e1 100%);
+  color: #007acc;
+}
